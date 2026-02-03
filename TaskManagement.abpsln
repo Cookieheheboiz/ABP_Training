@@ -1,0 +1,58 @@
+{
+  "id": "0513968d-90b7-4359-a45f-27d864382361",
+  "creationTime": "02/02/2026 14:40:29 +00:00",
+  "template": "app",
+  "versions": {
+    "AbpFramework": "10.0.2",
+    "AbpStudio": "2.1.9",
+    "TargetDotnetFramework": "net10.0"
+  },
+  "modules": {
+    "TaskManagement": {
+      "path": "TaskManagement.abpmdl"
+    }
+  },
+  "runProfiles": {
+    "Default": {
+      "path": "etc/abp-studio/run-profiles/Default.abprun.json"
+    }
+  },
+  "options": {
+    "httpRequests": {
+      "ignoredUrls": [
+      
+      ]
+    }
+  },
+  "creatingStudioConfiguration": {
+    "template": "app",
+    "createdAbpStudioVersion": "2.1.9",
+    "creationTool": "ABP Studio CLI",
+    "tiered": "false",
+    "runInstallLibs": "",
+    "useLocalReferences": "false",
+    "multiTenancy": "true",
+    "includeTests": "true",
+    "kubernetesConfiguration": "false",
+    "uiFramework": "angular",
+    "mobileFramework": "none",
+    "distributedEventBus": "none",
+    "databaseProvider": "ef",
+    "runDbMigrator": "",
+    "databaseManagementSystem": "sqlserver",
+    "separateTenantSchema": "false",
+    "createInitialMigration": "",
+    "theme": "leptonx-lite",
+    "themeStyle": "",
+    "themeMenuPlacement": "",
+    "mobileFramework": "none",
+    "progressiveWebApp": "false",
+    "runProgressiveWebAppSupport": "false",
+    "publicWebsite": "false",
+    "socialLogin": "true",
+    "sampleCrudPage": "false",
+    "selectedLanguages": ["English", "Arabic", "Chinese (Simplified)", "Chinese (Traditional)", "Czech", "English (United Kingdom)", "Finnish", "French", "German (Germany)", "Hindi ", "Hungarian", "Icelandic", "Italian", "Portuguese (Brazil)", "Romanian (Romania)", "Russian", "Slovak", "Spanish", "Swedish", "Turkish", ],
+    "defaultLanguage": "English",
+    "createCommand": "abp new TaskManagement -t app --ui-framework angular --database-provider ef --database-management-system sqlserver --theme leptonx-lite --skip-migration  --skip-migrator  --without-cms-kit --dont-run-install-libs --dont-run-bundling -no-file-management"
+  }
+}
