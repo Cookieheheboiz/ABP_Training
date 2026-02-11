@@ -195,6 +195,7 @@ public class TaskManagementHttpApiHostModule : AbpModule
 
     private void ConfigureConventionalControllers()
     {
+        ///
         Configure<AbpAspNetCoreMvcOptions>(options =>
         {
             options.ConventionalControllers.Create(typeof(TaskManagementApplicationModule).Assembly);
@@ -287,6 +288,7 @@ public class TaskManagementHttpApiHostModule : AbpModule
 
             var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
             options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
+            options.OAuthUsePkce();
         });
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();

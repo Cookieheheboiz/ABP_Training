@@ -1,7 +1,5 @@
 {
-  "generated": [
-    "app"
-  ],
+  "generated": ["app"],
   "modules": {
     "abp": {
       "rootPath": "abp",
@@ -873,13 +871,13 @@
       "rootPath": "app",
       "remoteServiceName": "Default",
       "controllers": {
-        "TaskManagement.Tasks.TaskAppService": {
+        "TaskManagement.Tasks.TaskController": {
           "controllerName": "Task",
           "controllerGroupName": "Task",
           "isRemoteService": true,
           "isIntegrationService": false,
           "apiVersion": null,
-          "type": "TaskManagement.Tasks.TaskAppService",
+          "type": "TaskManagement.Tasks.TaskController",
           "interfaces": [
             {
               "type": "TaskManagement.Tasks.ITaskAppService",
@@ -990,11 +988,48 @@
             }
           ],
           "actions": {
+            "GetAsyncById": {
+              "uniqueName": "GetAsyncById",
+              "name": "GetAsync",
+              "httpMethod": "GET",
+              "url": "api/task/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "TaskManagement.Tasks.TaskDto",
+                "typeSimple": "TaskManagement.Tasks.TaskDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<TaskManagement.Tasks.TaskDto,TaskManagement.Tasks.TaskDto,System.Guid,TaskManagement.Tasks.GetTasksInput>"
+            },
             "GetListAsyncByInput": {
               "uniqueName": "GetListAsyncByInput",
               "name": "GetListAsync",
               "httpMethod": "GET",
-              "url": "api/app/task",
+              "url": "api/task",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -1087,26 +1122,11 @@
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<TaskManagement.Tasks.TaskDto,TaskManagement.Tasks.TaskDto,System.Guid,TaskManagement.Tasks.GetTasksInput>"
             },
-            "GetUserLookupAsync": {
-              "uniqueName": "GetUserLookupAsync",
-              "name": "GetUserLookupAsync",
-              "httpMethod": "GET",
-              "url": "api/app/task/user-lookup",
-              "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
-              "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.ListResultDto<TaskManagement.Tasks.UserLookupDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<TaskManagement.Tasks.UserLookupDto>"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "TaskManagement.Tasks.ITaskAppService"
-            },
             "CreateAsyncByInput": {
               "uniqueName": "CreateAsyncByInput",
               "name": "CreateAsync",
               "httpMethod": "POST",
-              "url": "api/app/task",
+              "url": "api/task",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -1143,7 +1163,7 @@
               "uniqueName": "UpdateAsyncByIdAndInput",
               "name": "UpdateAsync",
               "httpMethod": "PUT",
-              "url": "api/app/task/{id}",
+              "url": "api/task/{id}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -1200,7 +1220,7 @@
               "uniqueName": "DeleteAsyncById",
               "name": "DeleteAsync",
               "httpMethod": "DELETE",
-              "url": "api/app/task/{id}",
+              "url": "api/task/{id}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -1233,42 +1253,20 @@
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
             },
-            "GetAsyncById": {
-              "uniqueName": "GetAsyncById",
-              "name": "GetAsync",
+            "GetUserLookupAsync": {
+              "uniqueName": "GetUserLookupAsync",
+              "name": "GetUserLookupAsync",
               "httpMethod": "GET",
-              "url": "api/app/task/{id}",
+              "url": "api/task/user-lookup",
               "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
+              "parametersOnMethod": [],
+              "parameters": [],
               "returnValue": {
-                "type": "TaskManagement.Tasks.TaskDto",
-                "typeSimple": "TaskManagement.Tasks.TaskDto"
+                "type": "Volo.Abp.Application.Dtos.ListResultDto<TaskManagement.Tasks.UserLookupDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<TaskManagement.Tasks.UserLookupDto>"
               },
               "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<TaskManagement.Tasks.TaskDto,TaskManagement.Tasks.TaskDto,System.Guid,TaskManagement.Tasks.GetTasksInput>"
+              "implementFrom": "TaskManagement.Tasks.ITaskAppService"
             }
           }
         }
@@ -4032,9 +4030,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "T"
-      ],
+      "genericArguments": ["T"],
       "properties": [
         {
           "name": "HasValue",
@@ -4095,7 +4091,7 @@
           "minimum": null,
           "maximum": null,
           "regex": null,
-          "isNullable": false
+          "isNullable": true
         },
         {
           "name": "Status",
@@ -4181,6 +4177,19 @@
       "genericArguments": null,
       "properties": [
         {
+          "name": "CreatorId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
           "name": "Title",
           "jsonName": null,
           "type": "System.String",
@@ -4231,22 +4240,27 @@
           "maximum": null,
           "regex": null,
           "isNullable": true
+        },
+        {
+          "name": "AssignedUserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
         }
       ]
     },
     "TaskManagement.Tasks.TaskStatus": {
       "baseType": "System.Enum",
       "isEnum": true,
-      "enumNames": [
-        "New",
-        "InProgress",
-        "Completed"
-      ],
-      "enumValues": [
-        0,
-        1,
-        2
-      ],
+      "enumNames": ["New", "InProgress", "Completed"],
+      "enumValues": [0, 1, 2],
       "genericArguments": null,
       "properties": null
     },
@@ -4757,13 +4771,7 @@
         "LockedOut",
         "RequiresTwoFactor"
       ],
-      "enumValues": [
-        1,
-        2,
-        3,
-        4,
-        5
-      ],
+      "enumValues": [1, 2, 3, 4, 5],
       "genericArguments": null,
       "properties": null
     },
@@ -4820,9 +4828,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "TPrimaryKey"
-      ],
+      "genericArguments": ["TPrimaryKey"],
       "properties": [
         {
           "name": "LastModificationTime",
@@ -4857,9 +4863,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "TPrimaryKey"
-      ],
+      "genericArguments": ["TPrimaryKey"],
       "properties": [
         {
           "name": "CreationTime",
@@ -4902,9 +4906,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "TKey"
-      ],
+      "genericArguments": ["TKey"],
       "properties": [
         {
           "name": "Id",
@@ -4926,9 +4928,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "TPrimaryKey"
-      ],
+      "genericArguments": ["TPrimaryKey"],
       "properties": [
         {
           "name": "LastModificationTime",
@@ -4963,9 +4963,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "TPrimaryKey"
-      ],
+      "genericArguments": ["TPrimaryKey"],
       "properties": [
         {
           "name": "CreationTime",
@@ -5008,9 +5006,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "TKey"
-      ],
+      "genericArguments": ["TKey"],
       "properties": [
         {
           "name": "Id",
@@ -5032,9 +5028,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "TPrimaryKey"
-      ],
+      "genericArguments": ["TPrimaryKey"],
       "properties": [
         {
           "name": "IsDeleted",
@@ -5170,9 +5164,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "T"
-      ],
+      "genericArguments": ["T"],
       "properties": [
         {
           "name": "Items",
@@ -5216,9 +5208,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "T"
-      ],
+      "genericArguments": ["T"],
       "properties": [
         {
           "name": "TotalCount",
@@ -9215,9 +9205,7 @@
       "isEnum": false,
       "enumNames": null,
       "enumValues": null,
-      "genericArguments": [
-        "T"
-      ],
+      "genericArguments": ["T"],
       "properties": [
         {
           "name": "Name",

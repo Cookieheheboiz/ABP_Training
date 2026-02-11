@@ -22,8 +22,23 @@
   </div>
 
   <div class="card-body">
-    <!-- Filters Section -->
     <div class="row mb-3">
+      <div class="col-md-3">
+        <label class="form-label">{{ '::Search' | abpLocalization }}</label>
+        <nz-input-group [nzSuffix]="suffixIconSearch">
+          <input
+            type="text"
+            nz-input
+            [placeholder]="'::SearchPlaceholder' | abpLocalization"
+            [(ngModel)]="filterText"
+            (keyup.enter)="onSearch()"
+          />
+        </nz-input-group>
+        <ng-template #suffixIconSearch>
+          <span nz-icon nzType="search"></span>
+        </ng-template>
+      </div>
+
       <div class="col-md-3">
         <label class="form-label">{{ '::Status' | abpLocalization }}</label>
         <nz-select
@@ -66,10 +81,10 @@
         </nz-select>
       </div>
 
-      <div class="col-md-2">
+      <div class="col-md-3">
         <label class="form-label">&nbsp;</label>
         <div>
-          <button class="btn btn-outline-secondary" (click)="clearFilters()">
+          <button class="btn btn-outline-secondary w-100" (click)="clearFilters()">
             <i class="fa fa-times me-1"></i>
             {{ '::Clear' | abpLocalization }}
           </button>
@@ -77,7 +92,6 @@
       </div>
     </div>
 
-    <!-- Table -->
     <nz-table
       #tasksTable
       [nzData]="taskData.items"
@@ -87,17 +101,23 @@
       [nzShowPagination]="true"
       [nzPageSize]="pageSize"
       [nzPageIndex]="pageIndex"
-      (nzPageIndexChange)="onPageChange($event)"
-      (nzPageSizeChange)="onPageSizeChange($event)"
+      (nzQueryParams)="onQueryParamsChange($event)"
       [nzShowSizeChanger]="true"
       [nzPageSizeOptions]="[5, 10, 20, 50]"
       nzSize="middle"
     >
       <thead>
         <tr>
-          <th nzWidth="30%">{{ '::Title' | abpLocalization }}</th>
+          <th nzWidth="30%" nzColumnKey="Title" [nzSortFn]="true">
+            {{ '::Title' | abpLocalization }}
+          </th>
+
           <th nzWidth="30%">{{ '::Description' | abpLocalization }}</th>
-          <th nzWidth="12%">{{ '::Status' | abpLocalization }}</th>
+
+          <th nzWidth="12%" nzColumnKey="Status" [nzSortFn]="true">
+            {{ '::Status' | abpLocalization }}
+          </th>
+
           <th nzWidth="15%">{{ '::AssignedUser' | abpLocalization }}</th>
           <th nzWidth="13%">{{ '::Actions' | abpLocalization }}</th>
         </tr>
@@ -110,13 +130,13 @@
 
           <td>
             <span class="text-muted">
-              {{ task.description || ('::NoDescription' | abpLocalization) }}
+              {{ task.description || ('::No Description' | abpLocalization) }}
             </span>
           </td>
 
           <td>
             <nz-tag [nzColor]="getStatusColor(task.status)">
-              {{ getStatusText(task.status) }}
+              {{ getStatusText(task.status) | abpLocalization }}
             </nz-tag>
           </td>
 
@@ -126,32 +146,37 @@
               {{ task.assignedUserName }}
             </span>
             <span *ngIf="!task.assignedUserName" class="text-muted">
-              {{ '::Unassigned' | abpLocalization }}
+              {{ 'TaskManagement::Unassigned' | abpLocalization }}
             </span>
           </td>
 
           <td>
             <div class="btn-group btn-group-sm" role="group">
-              <button
-                class="btn btn-outline-primary"
-                (click)="editTask(task)"
-                *abpPermission="'TaskManagement.Tasks.Update'"
-                nz-tooltip
-                [nzTooltipTitle]="'::Edit' | abpLocalization"
-              >
-                <i class="fa fa-edit"></i>
-              </button>
-              <button
-                class="btn btn-outline-danger"
-                nz-popconfirm
-                [nzPopconfirmTitle]="'::AreYouSureToDelete' | abpLocalization"
-                (nzOnConfirm)="delete(task.id)"
-                *abpPermission="'TaskManagement.Tasks.Delete'"
-                nz-tooltip
-                [nzTooltipTitle]="'::Delete' | abpLocalization"
-              >
-                <i class="fa fa-trash"></i>
-              </button>
+              <ng-container *ngIf="canUpdate(task)">
+                <button
+                  class="btn btn-outline-primary"
+                  (click)="editTask(task)"
+                  *abpPermission="'TaskManagement.Tasks.Update'"
+                  nz-tooltip
+                  [nzTooltipTitle]="'::Edit' | abpLocalization"
+                >
+                  <i class="fa fa-edit"></i>
+                </button>
+              </ng-container>
+
+              <ng-container *ngIf="canDelete(task)">
+                <button
+                  class="btn btn-outline-danger"
+                  nz-popconfirm
+                  [nzPopconfirmTitle]="'::AreYouSureToDelete' | abpLocalization"
+                  (nzOnConfirm)="delete(task.id)"
+                  *abpPermission="'TaskManagement.Tasks.Delete'"
+                  nz-tooltip
+                  [nzTooltipTitle]="'::Delete' | abpLocalization"
+                >
+                  <i class="fa fa-trash"></i>
+                </button>
+              </ng-container>
             </div>
           </td>
         </tr>
@@ -160,7 +185,6 @@
   </div>
 </div>
 
-<!-- Create/Edit Modal -->
 <nz-modal
   [(nzVisible)]="isModalOpen"
   [nzTitle]="isEditMode ? ('::EditTask' | abpLocalization) : ('::NewTask' | abpLocalization)"
@@ -170,7 +194,6 @@
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="form" nzLayout="vertical">
-      <!-- Title -->
       <nz-form-item>
         <nz-form-label nzRequired> {{ '::Title' | abpLocalization }} </nz-form-label>
         <nz-form-control [nzErrorTip]="titleErrorTpl">
@@ -190,7 +213,6 @@
         </nz-form-control>
       </nz-form-item>
 
-      <!-- Description -->
       <nz-form-item>
         <nz-form-label> {{ '::Description' | abpLocalization }} </nz-form-label>
         <nz-form-control>
@@ -203,7 +225,6 @@
         </nz-form-control>
       </nz-form-item>
 
-      <!-- Status -->
       <nz-form-item>
         <nz-form-label nzRequired> {{ '::Status' | abpLocalization }} </nz-form-label>
         <nz-form-control>
@@ -230,7 +251,6 @@
         </nz-form-control>
       </nz-form-item>
 
-      <!-- Assigned User -->
       <nz-form-item>
         <nz-form-label> {{ '::AssignedUser' | abpLocalization }} </nz-form-label>
         <nz-form-control>

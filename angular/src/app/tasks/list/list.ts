@@ -1,10 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { ListService, PagedResultDto } from '@abp/ng.core';
-import { TaskService, TaskDto, TaskStatus } from 'src/app/proxy/tasks';
+import { ListService, PagedResultDto, ConfigStateService } from '@abp/ng.core';
+import { TaskService, TaskDto, TaskStatus, UserLookupDto } from 'src/app/proxy/tasks';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
-import { UserLookupDto } from 'src/app/proxy/tasks';
+import { NzTableQueryParams } from 'ng-zorro-antd/table'; // 👈 QUAN TRỌNG: Import để xử lý Table
 
 @Component({
   selector: 'app-list',
@@ -15,45 +15,63 @@ import { UserLookupDto } from 'src/app/proxy/tasks';
   standalone: false,
 })
 export class List implements OnInit {
-  // Dữ liệu hiển thị
+  // --- DỮ LIỆU ---
   taskData: PagedResultDto<TaskDto> = { items: [], totalCount: 0 };
-  users: UserLookupDto[] = []; // Danh sách user
+  users: UserLookupDto[] = [];
   taskStatus = TaskStatus;
 
-  // Biến trạng thái
+  // --- TRẠNG THÁI UI ---
   loading = false;
   saving = false;
   isModalOpen = false;
   isEditMode = false;
   selectedTaskId: string = '';
 
-  // Biến bộ lọc (Filter)
+  // --- BỘ LỌC & SẮP XẾP ---
+  filterText = ''; // Biến tìm kiếm
   filterStatus: TaskStatus | null = null;
   filterAssignedUserId: string | null = null;
+  sorting = ''; // Biến lưu chuỗi sắp xếp (vd: "Title ASC")
+
   pageSize = 10;
   pageIndex = 1;
 
   form: FormGroup;
+  currentUserId: string;
+  isAdmin = false;
 
-  // Inject Services
+  // --- INJECT SERVICES ---
   public readonly list = inject(ListService);
   private readonly taskService = inject(TaskService);
   private readonly fb = inject(FormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly confirmation = inject(ConfirmationService);
+  private readonly config = inject(ConfigStateService);
 
   ngOnInit() {
+    // 1. Lấy thông tin User hiện tại
+    const currentUser = this.config.getOne('currentUser');
+    this.currentUserId = currentUser.id;
+    this.isAdmin = currentUser.roles.includes('admin');
+
+    // 2. Lấy danh sách User để hiển thị trong Dropdown
     this.taskService.getUserLookup().subscribe(result => {
       this.users = result.items;
     });
+
+    // 3. Khởi tạo Form
     this.buildForm();
-    // Hook request lấy danh sách
+
+    // 4. CẤU HÌNH STREAM LẤY DỮ LIỆU (QUAN TRỌNG)
     const taskStreamCreator = query => {
       this.loading = true;
       return this.taskService.getList({
         ...query,
-        status: this.filterStatus, // Gửi kèm filter status
-        assignedUserId: this.filterAssignedUserId, // Gửi kèm filter user
+        // Truyền thêm các tham số bộ lọc của riêng mình
+        filterText: this.filterText,
+        status: this.filterStatus,
+        assignedUserId: this.filterAssignedUserId,
+        sorting: this.sorting,
       });
     };
 
@@ -63,28 +81,59 @@ export class List implements OnInit {
     });
   }
 
-  // --- HÀM XỬ LÝ LỌC & PHÂN TRANG ---
-  onFilterChange() {
-    this.list.get(); // Gọi lại API khi thay đổi bộ lọc
-  }
+  // --- HÀM XỬ LÝ TABLE (SORT & PAGING) ---
 
-  clearFilters() {
-    this.filterStatus = null;
-    this.filterAssignedUserId = null;
+  // Hàm này tự động chạy khi: Đổi trang, Đổi số lượng dòng, hoặc Click vào tiêu đề cột để Sort
+  onQueryParamsChange(params: NzTableQueryParams): void {
+    const { pageSize, pageIndex, sort } = params;
+
+    // Cập nhật biến local
+    this.pageIndex = pageIndex;
+    this.pageSize = pageSize;
+
+    // Cập nhật cấu hình cho ListService của ABP
+    this.list.maxResultCount = pageSize;
+    this.list.page = pageIndex - 1; // ABP tính trang từ 0, Antd tính từ 1
+
+    // Xử lý Logic Sắp xếp
+    const currentSort = sort.find(item => item.value !== null);
+    if (currentSort) {
+      // Chuyển "ascend" -> "ASC", "descend" -> "DESC"
+      const sortDirection = currentSort.value === 'ascend' ? 'ASC' : 'DESC';
+      this.sorting = `${currentSort.key} ${sortDirection}`;
+    } else {
+      this.sorting = ''; // Không sắp xếp
+    }
+
+    // Gọi API (Refresh lại bảng)
     this.list.get();
   }
 
-  onPageChange(pageIndex: number) {
-    this.pageIndex = pageIndex;
-    this.list.page = pageIndex - 1; // Antd đếm từ 1, ABP đếm từ 0
+  // --- HÀM TÌM KIẾM & BỘ LỌC ---
+
+  // Khi ấn Enter ở ô tìm kiếm
+  onSearch() {
+    this.list.page = 0; // Reset về trang 1
+    this.list.get();
   }
 
-  onPageSizeChange(pageSize: number) {
-    this.pageSize = pageSize;
-    this.list.maxResultCount = pageSize;
+  // Khi chọn Dropdown Status hoặc User
+  onFilterChange() {
+    this.list.page = 0;
+    this.list.get();
   }
 
-  // --- HÀM XỬ LÝ MODAL (TẠO/SỬA) ---
+  // Xóa toàn bộ bộ lọc
+  clearFilters() {
+    this.filterText = '';
+    this.filterStatus = null;
+    this.filterAssignedUserId = null;
+    this.sorting = ''; // Reset cả sắp xếp nếu muốn
+    this.list.get();
+  }
+
+  // --- LOGIC FORM (CREATE / EDIT) ---
+
   buildForm() {
     this.form = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(256)]],
@@ -97,14 +146,28 @@ export class List implements OnInit {
   createTask() {
     this.isEditMode = false;
     this.selectedTaskId = '';
-    this.form.reset({ status: TaskStatus.New }); // Reset form về mặc định
+    this.form.reset({ status: TaskStatus.New });
+    this.form.enable(); // Mở khóa tất cả input
     this.isModalOpen = true;
   }
 
   editTask(task: TaskDto) {
     this.isEditMode = true;
     this.selectedTaskId = task.id;
-    this.form.patchValue(task); // Đổ dữ liệu cũ vào form
+    this.form.enable(); // Mặc định là enable hết
+    this.form.patchValue(task);
+
+    // Logic phân quyền: Nếu là Assignee (nhưng ko phải Creator/Admin) -> Chỉ cho sửa Status
+    const isCreator = task.creatorId === this.currentUserId;
+    const isAssignee = task.assignedUserId === this.currentUserId;
+
+    if (isAssignee && !isCreator && !this.isAdmin) {
+      this.form.get('title')?.disable();
+      this.form.get('description')?.disable();
+      this.form.get('assignedUserId')?.disable();
+      // Chỉ để lại 'status' là enable
+    }
+
     this.isModalOpen = true;
   }
 
@@ -116,9 +179,11 @@ export class List implements OnInit {
     if (this.form.invalid) return;
 
     this.saving = true;
+    const formValue = this.form.getRawValue(); // getRawValue để lấy cả các trường bị disable
+
     const request = this.isEditMode
-      ? this.taskService.update(this.selectedTaskId, this.form.value)
-      : this.taskService.create(this.form.value);
+      ? this.taskService.update(this.selectedTaskId, formValue)
+      : this.taskService.create(formValue);
 
     request.subscribe({
       next: () => {
@@ -133,7 +198,7 @@ export class List implements OnInit {
     });
   }
 
-  // --- HÀM XÓA ---
+  // --- LOGIC XÓA ---
   delete(id: string) {
     this.confirmation.warn('::AreYouSureToDelete', '::ConfirmDelete').subscribe(status => {
       if (status === Confirmation.Status.confirm) {
@@ -145,7 +210,20 @@ export class List implements OnInit {
     });
   }
 
-  // --- HELPER UI ---
+  // --- HELPER LOGIC HIỂN THỊ ---
+
+  canUpdate(task: TaskDto): boolean {
+    return (
+      this.isAdmin ||
+      task.creatorId === this.currentUserId ||
+      task.assignedUserId === this.currentUserId
+    );
+  }
+
+  canDelete(task: TaskDto): boolean {
+    return this.isAdmin || task.creatorId === this.currentUserId;
+  }
+
   getStatusColor(status: TaskStatus): string {
     switch (status) {
       case TaskStatus.New:
@@ -162,11 +240,11 @@ export class List implements OnInit {
   getStatusText(status: TaskStatus): string {
     switch (status) {
       case TaskStatus.New:
-        return 'New';
+        return '::Enum:TaskStatus.0';
       case TaskStatus.InProgress:
-        return 'In Progress';
+        return '::Enum:TaskStatus.1';
       case TaskStatus.Completed:
-        return 'Completed';
+        return '::Enum:TaskStatus.2';
       default:
         return '';
     }

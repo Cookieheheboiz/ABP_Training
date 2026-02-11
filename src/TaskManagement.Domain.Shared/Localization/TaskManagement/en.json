@@ -13,6 +13,8 @@
     "Permission:Tasks.Create": "Create Task",
     "Permission:Tasks.Update": "Edit Task",
     "Permission:Tasks.Delete": "Delete Task",
+    "TaskDeletionForbidden": "You can not delete this task!",
+    "TaskUpdateForbidden":  "You can not update this task!",
 
     "Task": "Task",
     "Status": "Status",

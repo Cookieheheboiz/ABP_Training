@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TaskManagement.Permissions;
+using TaskManagement.Services.Base;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -13,7 +16,8 @@ using Volo.Abp.Users;
 
 namespace TaskManagement.Tasks
 {
-    public class TaskAppService : CrudAppService<
+    [RemoteService(IsEnabled = false)]
+    public class TaskAppService : MyCrudAppService<
             TaskItem,
             TaskDto,
             Guid,
@@ -22,27 +26,92 @@ namespace TaskManagement.Tasks
             ITaskAppService
     {
         private readonly IIdentityUserRepository _userRepository;
-        public TaskAppService(IRepository<TaskItem, Guid> repository, IIdentityUserRepository userRepository)
-            : base(repository)
+        private readonly ITaskItemRepository _taskItemRepository;
+        public TaskAppService(ITaskItemRepository repository, IIdentityUserRepository userRepository)
+             : base(repository)
         {
             _userRepository = userRepository;
-            GetPolicyName = TaskManagementPermissions.Tasks.Default;
-            GetListPolicyName = TaskManagementPermissions.Tasks.Default;
-            CreatePolicyName = TaskManagementPermissions.Tasks.Create;
-            UpdatePolicyName = TaskManagementPermissions.Tasks.Update;
-            DeletePolicyName = TaskManagementPermissions.Tasks.Delete;
+            _taskItemRepository = repository;
+
+            GetPolicyName = "TaskManagement.Tasks";
+            GetListPolicyName = "TaskManagement.Tasks";
+            CreatePolicyName = "TaskManagement.Tasks.Create";
+            UpdatePolicyName = "TaskManagement.Tasks.Update";
+            DeletePolicyName = "TaskManagement.Tasks.Delete";
         }
 
+        public override async Task<TaskDto> UpdateAsync(Guid id, CreateUpdateTaskDto input)
+        {
+            // Trước khi thực hiện nội dung hàm bên dưới thì kiểm tra quyền hiện tại có hợp lệ không
+            await CheckPolicyAsync(UpdatePolicyName);
+
+            // Lấy Task từ Database lên
+            var task = await Repository.GetAsync(id);
+
+            // Kiểm tra: Nếu không phải Admin VÀ không phải người tạo -> Báo lỗi
+            var isCreator = task.CreatorId == CurrentUser.Id;
+            var isAssignee = task.AssignedUserId == CurrentUser.Id; // Kiểm tra là người được giao việc
+            var isManager = await AuthorizationService.IsGrantedAsync(DeletePolicyName);
+
+            if (!isCreator && !isManager && !isAssignee)
+            {
+                throw new UserFriendlyException(L["TaskUpdateForbidden"]);
+            }
+
+            if (isAssignee && !isCreator && !isManager)
+            {
+                await _taskItemRepository.UpdateStatusAsync(id, input.Status);
+                task.Status = input.Status;
+            }
+            else
+            {
+                // Nếu là Admin hoặc Creator thì được sửa
+                ObjectMapper.Map(input, task);
+                await Repository.UpdateAsync(task, autoSave: true);
+            }
+
+            return ObjectMapper.Map<TaskItem, TaskDto>(task);
+        }
+
+        public override async Task DeleteAsync(Guid id)
+        {
+            // Trước khi thực hiện nội dung hàm bên dưới thì kiểm tra quyền hiện tại có hợp lệ không
+            await CheckPolicyAsync(DeletePolicyName);
+
+            var task = await Repository.GetAsync(id);
+
+            var isCreator = task.CreatorId == CurrentUser.Id;
+            var isManager = await AuthorizationService.IsGrantedAsync(DeletePolicyName);
+
+            // Assignee KHÔNG ĐƯỢC PHÉP XÓA (trừ khi đó cũng là Creator)
+            if (!isCreator && !isManager)
+            {
+                throw new UserFriendlyException(L["TaskDeletionForbidden"]);
+            }
+
+            await _taskItemRepository.DeleteTaskAsync(id);
+        }
         public override async Task<PagedResultDto<TaskDto>> GetListAsync(GetTasksInput input)
         {
+            // Trước khi thực hiện nội dung hàm bên dưới thì kiểm tra quyền hiện tại có hợp lệ không
+            await CheckPolicyAsync(GetListPolicyName);   
+
             var queryable = await Repository.GetQueryableAsync();
 
+            var filter = input.FilterText?.ToLower().Trim();
             queryable = queryable
-                .WhereIf(!string.IsNullOrWhiteSpace(input.FilterText), x => x.Title.Contains(input.FilterText))
+                .WhereIf(!string.IsNullOrWhiteSpace(filter), x =>
+                    x.Title.ToLower().Contains(filter) || (x.Description != null && x.Description.ToLower().Contains(filter))
+                )
                 .WhereIf(input.Status.HasValue, x => x.Status == input.Status)
                 .WhereIf(input.AssignedUserId.HasValue, x => x.AssignedUserId == input.AssignedUserId);
 
             var totalCount = await AsyncExecuter.CountAsync(queryable);
+
+            if (string.IsNullOrWhiteSpace(input.Sorting))
+            {
+                input.Sorting = nameof(TaskItem.CreationTime) + " DESC";
+            }
 
             queryable = ApplySorting(queryable, input);
             queryable = ApplyPaging(queryable, input);

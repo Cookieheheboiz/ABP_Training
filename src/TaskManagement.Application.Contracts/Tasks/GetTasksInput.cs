@@ -7,7 +7,7 @@ namespace TaskManagement.Tasks
 {
     public class GetTasksInput : PagedAndSortedResultRequestDto
     {
-        public string? FilterText { get; set; } // Tìm kiếm chung (nếu cần)
+        public string? FilterText { get; set; }
         public TaskStatus? Status { get; set; }
         public Guid? AssignedUserId { get; set; }
     }

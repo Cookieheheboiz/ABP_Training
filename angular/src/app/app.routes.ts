@@ -26,5 +26,9 @@ export const APP_ROUTES: Routes = [
   {
     path: 'tasks',
     loadChildren: () => import('./tasks/tasks-module').then(m => m.TasksModule),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'TaskManagement.Tasks',
+    },
   },
 ];

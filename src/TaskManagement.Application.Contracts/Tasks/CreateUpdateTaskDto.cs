@@ -12,7 +12,7 @@ namespace TaskManagement.Tasks
         public string Title { get; set; }
 
         [StringLength(2048)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         public TaskStatus Status { get; set; } = TaskStatus.New;
