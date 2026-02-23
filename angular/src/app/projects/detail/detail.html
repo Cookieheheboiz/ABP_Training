@@ -1,0 +1,253 @@
+<div class="container-fluid py-4" *ngIf="project">
+  <div class="d-flex align-items-center mb-4">
+    <button nz-button nzType="text" routerLink="/projects" class="me-3">
+      <i class="fa fa-arrow-left fa-lg"></i>
+    </button>
+    <h2 class="mb-0 fw-bold">{{ '::Project' | abpLocalization }}: {{ project.name }}</h2>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <nz-card class="text-center shadow-sm border-0 border-top border-primary border-4">
+        <div class="text-muted small fw-bold">{{ '::TotalTasks' | abpLocalization }}</div>
+        <div class="h2 mb-0 text-primary">{{ stats.total }}</div>
+      </nz-card>
+    </div>
+    <div class="col-md-2">
+      <nz-card class="text-center shadow-sm border-0 border-top border-warning border-4">
+        <div class="text-muted small fw-bold">{{ '::InProgressTasks' | abpLocalization }}</div>
+        <div class="h2 mb-0 text-warning">{{ stats.inProgress }}</div>
+      </nz-card>
+    </div>
+    <div class="col-md-2">
+      <nz-card class="text-center shadow-sm border-0 border-top border-success border-4">
+        <div class="text-muted small fw-bold">{{ '::Completed' | abpLocalization }}</div>
+        <div class="h2 mb-0 text-success">{{ stats.completed }}</div>
+      </nz-card>
+    </div>
+    <div class="col-md-3">
+      <nz-card class="shadow-sm border-0 bg-danger-subtle border-start border-danger border-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-danger small fw-bold">{{ '::Overdue' | abpLocalization }}</div>
+            <div class="h2 mb-0 text-danger">{{ stats.overdue }}</div>
+          </div>
+          <i class="fa fa-exclamation-circle fa-2x text-danger opacity-50"></i>
+        </div>
+      </nz-card>
+    </div>
+    <div class="col-md-3">
+      <nz-card class="shadow-sm border-0 bg-info-subtle border-start border-info border-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-info small fw-bold">{{ '::Pending' | abpLocalization }}</div>
+            <div class="h2 mb-0 text-info">{{ stats.pending }}</div>
+          </div>
+          <i class="fa fa-clock-o fa-2x text-info opacity-50"></i>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-bold"
+          ><i class="fa fa-line-chart me-2"></i>{{ '::ProjectProgress' | abpLocalization }}</span
+        >
+        <span class="badge bg-success">{{ progress }}%</span>
+      </div>
+      <nz-progress [nzPercent]="progress" nzStatus="active" [nzStrokeWidth]="12"></nz-progress>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 fw-bold">
+          <i class="fa fa-list me-2"></i>{{ '::Tasks' | abpLocalization }}
+        </h5>
+        <button nz-button nzType="primary" (click)="createTask()">
+          <i class="fa fa-plus me-1"></i>{{ '::NewTask' | abpLocalization }}
+        </button>
+      </div>
+
+      <nz-table #taskTable [nzData]="taskData.items" [nzLoading]="loading">
+        <thead>
+          <tr>
+            <th>{{ '::Title' | abpLocalization }}</th>
+            <th>{{ '::Status' | abpLocalization }}</th>
+            <th>{{ '::AssignedTo' | abpLocalization }}</th>
+            <th>{{ '::DueDate' | abpLocalization }}</th>
+            <th>{{ '::Approved' | abpLocalization }}</th>
+            <th nzRight>{{ '::Actions' | abpLocalization }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let task of taskTable.data">
+            <td>
+              <span class="fw-bold">{{ task.title }}</span>
+              <span *ngIf="!task.isApproved" class="ms-2 badge bg-warning text-dark small"
+                >Đề xuất</span
+              >
+            </td>
+            <td>
+              <nz-tag [nzColor]="getStatusColor(task.status)">
+                {{ '::Enum:TaskStatus.' + task.status | abpLocalization }}
+              </nz-tag>
+            </td>
+            <td>
+              <nz-avatar-group *ngIf="task.assignedUserNames?.length">
+                <nz-avatar
+                  *ngFor="let name of task.assignedUserNames"
+                  [nzText]="name.charAt(0) | uppercase"
+                  [nz-tooltip]="name"
+                  style="background-color: #87d068"
+                ></nz-avatar>
+              </nz-avatar-group>
+            </td>
+            <td>{{ task.dueDate | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <ng-container *ngIf="canApprove(task)">
+                <div class="d-flex align-items-center gap-3">
+                  <i
+                    class="fa fa-check-circle fa-2x text-success"
+                    style="cursor: pointer"
+                    nz-tooltip="{{ '::Approve Task' | abpLocalization }}"
+                    (click)="approveTask(task.id)"
+                  >
+                  </i>
+
+                  <i
+                    class="fa fa-times-circle fa-2x text-danger"
+                    style="cursor: pointer"
+                    nz-tooltip="{{ '::Reject Task' | abpLocalization }}"
+                    nz-popconfirm
+                    nzPopconfirmTitle="{{ '::ConfirmRejectTask' | abpLocalization }}"
+                    (nzOnConfirm)="rejectTask(task.id)"
+                  >
+                  </i>
+                </div>
+              </ng-container>
+
+              <span *ngIf="task.isApproved" class="text-success fw-bold">
+                <i class="fa fa-check-circle me-1"></i>{{ '::Approved' | abpLocalization }}
+              </span>
+            </td>
+            <td nzRight>
+              <div class="d-flex gap-2">
+                <ng-container *ngIf="canUpdate(task)">
+                  <button
+                    nz-button
+                    nzType="text"
+                    (click)="editTask(task)"
+                    nz-tooltip="{{ '::Edit Task' | abpLocalization }}"
+                  >
+                    <i class="fa fa-pencil text-primary"></i>
+                  </button>
+                </ng-container>
+
+                <ng-container *ngIf="canDelete(task)">
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    (click)="deleteTask(task.id)"
+                    nz-tooltip="{{ '::Delete Task' | abpLocalization }}"
+                  >
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </ng-container>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+</div>
+
+<nz-modal
+  [(nzVisible)]="isModalOpen"
+  [nzTitle]="isEditMode ? ('::EditTask' | abpLocalization) : ('::NewTask' | abpLocalization)"
+  (nzOnCancel)="isModalOpen = false"
+  (nzOnOk)="save()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="form" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ '::Title' | abpLocalization }}</nz-form-label>
+        <nz-form-control>
+          <input
+            nz-input
+            formControlName="title"
+            placeholder="{{ '::Enter task title' | abpLocalization }}"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ '::Description' | abpLocalization }}</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            formControlName="description"
+            rows="3"
+            placeholder="{{ '::Enter task description' | abpLocalization }}"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ '::Status' | abpLocalization }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="status">
+                <nz-option [nzValue]="0" nzLabel="{{ 'Form::New' | abpLocalization }}"></nz-option>
+                <nz-option
+                  [nzValue]="1"
+                  nzLabel="{{ 'Form::In Progress' | abpLocalization }}"
+                ></nz-option>
+                <nz-option
+                  [nzValue]="2"
+                  nzLabel="{{ 'Form::Completed' | abpLocalization }}"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label>{{ '::DueDate' | abpLocalization }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                formControlName="dueDate"
+                nzPlaceHolder="{{ '::Select date' | abpLocalization}}"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ '::AssignedUser' | abpLocalization }}</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            formControlName="assignedUserIds"
+            nzMode="multiple"
+            nzPlaceHolder="{{ '::Select assigned users' | abpLocalization }}"
+          >
+            <nz-option
+              *ngFor="let user of projectMembers"
+              [nzLabel]="user.userName"
+              [nzValue]="user.id"
+            ></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

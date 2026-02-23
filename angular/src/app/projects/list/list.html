@@ -1,0 +1,176 @@
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h5 class="mb-0 card-title">
+          <i class="fa fa-folder-open me-2 text-primary"></i> {{ '::Projects' | abpLocalization }}
+        </h5>
+        <small class="text-muted"
+          >{{ '::Project management and progress monitoring' | abpLocalization }}</small
+        >
+      </div>
+      <div class="col text-end col-md-6">
+        <button nz-button nzType="primary" nzSize="large" (click)="createProject()">
+          <i class="fa fa-plus me-1"></i>
+          <span></span> {{ '::New Project' | abpLocalization }}
+        </button>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-5">
+        <nz-input-group [nzSuffix]="suffixIconSearch" nzSize="large">
+          <input
+            type="text"
+            nz-input
+            [placeholder]="'::Search' | abpLocalization"
+            [(ngModel)]="filterText"
+            (keyup.enter)="loadData()"
+          />
+        </nz-input-group>
+        <ng-template #suffixIconSearch>
+          <span nz-icon nzType="search"></span>
+        </ng-template>
+      </div>
+    </div>
+
+    <nz-spin [nzSpinning]="loading">
+      <div *ngIf="!loading && projectData.items?.length === 0" class="text-center py-5">
+        <nz-empty nzNotFoundContent="{{ '::No projects found' | abpLocalization }}"></nz-empty>
+      </div>
+
+      <div nz-row [nzGutter]="[24, 24]" *ngIf="!loading">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8" *ngFor="let project of projectData.items">
+          <nz-card
+            [nzHoverable]="true"
+            class="project-card h-100 border-0 shadow-sm"
+            (click)="goToProjectDetail(project.id)"
+          >
+            <div class="d-flex align-items-center mb-3">
+              <nz-avatar
+                [nzSize]="48"
+                [nzText]="project.name.charAt(0).toUpperCase()"
+                [nzStyle]="{'background-color': getAvatarColor(project.name), 'font-size': '20px'}"
+              ></nz-avatar>
+              <div class="ms-3 flex-grow-1 overflow-hidden">
+                <h5 class="mb-0 fw-bold text-truncate" [title]="project.name">
+                  {{ project.name }}
+                </h5>
+                <small class="text-muted">{{ project.creationTime | date:'dd/MM/yyyy' }}</small>
+              </div>
+
+              <a nz-dropdown [nzDropdownMenu]="menu" (click)="$event.stopPropagation()" class="p-2">
+                <i class="fa fa-ellipsis-v text-muted"></i>
+              </a>
+              <nz-dropdown-menu #menu="nzDropdownMenu">
+                <ul nz-menu>
+                  <li nz-menu-item (click)="editProject(project, $event)">
+                    <i class="fa fa-edit me-2 text-primary"></i> {{ '::Edit' | abpLocalization }}
+                  </li>
+                  <li nz-menu-item nzDanger (click)="deleteProject(project.id, $event)">
+                    <i class="fa fa-trash me-2"></i> {{ '::Delete' | abpLocalization }}
+                  </li>
+                </ul>
+              </nz-dropdown-menu>
+            </div>
+
+            <p class="text-muted mb-3 text-truncate-2" style="min-height: 42px">
+              {{ project.description || '' }}
+            </p>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <small class="text-muted">{{ '::Progress' | abpLocalization }}</small>
+                <small class="fw-bold">{{ project.progress || 0 }}%</small>
+              </div>
+              <nz-progress
+                [nzPercent]="project.progress || 0"
+                nzSize="small"
+                [nzStatus]="'active'"
+              ></nz-progress>
+            </div>
+
+            <div class="d-flex justify-content-between border-top pt-3">
+              <small class="text-muted">
+                <i class="fa fa-user-circle me-1"></i> PM: {{ project.managerName }}
+              </small>
+              <small class="text-muted" *ngIf="project.memberIds?.length">
+                <i class="fa fa-users me-1"></i> {{ project.memberIds.length }}
+              </small>
+            </div>
+          </nz-card>
+        </div>
+      </div>
+    </nz-spin>
+  </div>
+</div>
+
+<nz-modal
+  [(nzVisible)]="isModalOpen"
+  [nzTitle]="(isEditMode ? '::Edit Project' : '::New Project') | abpLocalization"
+  (nzOnCancel)="isModalOpen = false"
+  (nzOnOk)="save()"
+  [nzOkLoading]="saving"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="form" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ '::Project Name' | abpLocalization }}</nz-form-label>
+        <nz-form-control nzErrorTip="{{ '::Please enter project name' | abpLocalization }}">
+          <input
+            nz-input
+            formControlName="name"
+            placeholder="{{ '::For example: Develop mobile app...' | abpLocalization }}"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ '::Project Description' | abpLocalization }}</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            formControlName="description"
+            rows="3"
+            placeholder="{{ '::Enter project description' | abpLocalization }}"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ '::Project Manager' | abpLocalization }}</nz-form-label>
+        <nz-form-control nzErrorTip="{{ '::Please select a project manager' | abpLocalization }}">
+          <nz-select
+            formControlName="managerId"
+            nzShowSearch
+            nzPlaceHolder="{{ '::Select a project manager' | abpLocalization }}"
+          >
+            <nz-option
+              *ngFor="let user of users"
+              [nzLabel]="user.userName"
+              [nzValue]="user.id"
+            ></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ '::Project Members' | abpLocalization }}</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            formControlName="memberIds"
+            nzMode="multiple"
+            [nzPlaceHolder]="'::Select project members' | abpLocalization"
+            nzShowSearch
+          >
+            <nz-option
+              *ngFor="let user of users"
+              [nzLabel]="user.userName"
+              [nzValue]="user.id"
+            ></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

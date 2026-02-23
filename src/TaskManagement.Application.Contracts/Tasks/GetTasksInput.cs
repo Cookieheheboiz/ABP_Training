@@ -10,5 +10,6 @@ namespace TaskManagement.Tasks
         public string? FilterText { get; set; }
         public TaskStatus? Status { get; set; }
         public Guid? AssignedUserId { get; set; }
+        public Guid? ProjectId { get; set; }
     }
 }

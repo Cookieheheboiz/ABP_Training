@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using TaskManagement.Projects;
 using TaskManagement.Tasks;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
@@ -15,14 +16,17 @@ namespace TaskManagement
     {
         private readonly IRepository<TaskItem, Guid> _taskRepository;
         private readonly IIdentityUserRepository _userRepository;
+        private readonly IRepository<Project, Guid> _projectRepository;
         private readonly IGuidGenerator _guidGenerator;
 
         public TaskManagementTestDataSeedContributor(
             IRepository<TaskItem, Guid> taskRepository,
+            IRepository<Project, Guid> projectRepository,
             IIdentityUserRepository userRepository,
             IGuidGenerator guidGenerator)
         {
             _taskRepository = taskRepository;
+            _projectRepository = projectRepository;
             _userRepository = userRepository;
             _guidGenerator = guidGenerator;
         }
@@ -31,6 +35,13 @@ namespace TaskManagement
         {
             var userId = _guidGenerator.Create();
             var user = new IdentityUser(userId, "user1", "user1@abp.io");
+            var projectId = _guidGenerator.Create();
+            if (await _projectRepository.GetCountAsync() <= 0)
+            {
+                await _projectRepository.InsertAsync(
+                    new Project(projectId, "Dự án Demo", "Mô tả dự án mẫu", userId)
+                );
+            }
 
             if (await _userRepository.FindByNormalizedUserNameAsync("USER1") == null)
             {
@@ -43,7 +54,9 @@ namespace TaskManagement
                     "Test Task 1",
                     "Description for Test Task 1",
                     TaskManagement.Tasks.TaskStatus.New,
-                    userId
+                    projectId,
+                    true,
+                    DateTime.Now.AddDays(7)
                 )
             );
         }

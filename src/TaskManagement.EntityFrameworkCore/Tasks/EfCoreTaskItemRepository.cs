@@ -42,7 +42,9 @@ public class EfCoreTaskItemRepository
         var dbSet = await GetDbSetAsync();
 
         return await dbSet
-            .Where(t => t.AssignedUserId == assignedUserId && t.Status == status)
+            .Include(t => t.Assignees)
+            .Where(t => t.Assignees.Any(a => a.UserId == assignedUserId) && t.Status == status)
+
             .OrderByDescending(t => t.CreationTime)
             .ToListAsync();
     }

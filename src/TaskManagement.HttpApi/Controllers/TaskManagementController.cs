@@ -35,5 +35,11 @@ namespace TaskManagement.Tasks
 
         [HttpGet("user-lookup")]
         public Task<ListResultDto<UserLookupDto>> GetUserLookupAsync() => _taskAppService.GetUserLookupAsync();
+
+        [HttpPost("{id}/approve")] // Sử dụng HttpPost cho hành động xử lý
+        public Task ApproveTaskAsync(Guid id)
+        {
+            return _taskAppService.ApproveTaskAsync(id);
+        }
     }
 }

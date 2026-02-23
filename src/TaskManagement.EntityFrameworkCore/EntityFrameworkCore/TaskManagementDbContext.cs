@@ -16,6 +16,7 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using TaskManagement.Tasks;
+using TaskManagement.Projects;
 
 namespace TaskManagement.EntityFrameworkCore;
 
@@ -60,6 +61,12 @@ public class TaskManagementDbContext :
     #endregion
     public DbSet<TaskItem> TaskItems { get; set; }
 
+    public DbSet<TaskAssignee> TaskAssignees { get; set; }
+
+    public DbSet<Project> Projects { get; set; }
+
+    public DbSet<ProjectMember> ProjectMembers { get; set; }
+
     public TaskManagementDbContext(DbContextOptions<TaskManagementDbContext> options)
         : base(options)
     {
@@ -83,13 +90,44 @@ public class TaskManagementDbContext :
         builder.ConfigureBlobStoring();
         builder.ConfigureTaskManagement();
 
-        /* Configure your own tables/entities inside here */
+        builder.Entity<TaskItem>(b =>
+        {
+            b.ToTable(TaskManagementConsts.DbTablePrefix + "Tasks", TaskManagementConsts.DbSchema);
+            b.ConfigureByConvention();
 
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(TaskManagementConsts.DbTablePrefix + "YourEntities", TaskManagementConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
+            b.HasMany(x => x.Assignees)
+             .WithOne()
+             .HasForeignKey(x => x.TaskId)
+             .IsRequired();
+
+            b.HasOne(x => x.Project)
+             .WithMany()
+             .HasForeignKey(x => x.ProjectId);
+        });
+
+        builder.Entity<Project>(b =>
+        {
+            b.ToTable(TaskManagementConsts.DbTablePrefix + "Projects", TaskManagementConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.HasMany(x => x.Members)
+             .WithOne()
+             .HasForeignKey(x => x.ProjectId)
+             .IsRequired();
+        });
+
+        builder.Entity<TaskAssignee>(b =>
+        {
+            b.ToTable(TaskManagementConsts.DbTablePrefix + "TaskAssignees", TaskManagementConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.HasKey(x => new { x.TaskId, x.UserId });
+        });
+
+        builder.Entity<ProjectMember>(b =>
+        {
+            b.ToTable(TaskManagementConsts.DbTablePrefix + "ProjectMembers", TaskManagementConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.HasKey(x => new { x.ProjectId, x.UserId });
+        });
     }
 }

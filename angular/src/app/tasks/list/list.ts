@@ -4,7 +4,9 @@ import { TaskService, TaskDto, TaskStatus, UserLookupDto } from 'src/app/proxy/t
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
-import { NzTableQueryParams } from 'ng-zorro-antd/table'; // 👈 QUAN TRỌNG: Import để xử lý Table
+import { NzTableQueryParams } from 'ng-zorro-antd/table';
+import { ProjectService, ProjectDto } from '@proxy/projects';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-list',
@@ -19,6 +21,7 @@ export class List implements OnInit {
   taskData: PagedResultDto<TaskDto> = { items: [], totalCount: 0 };
   users: UserLookupDto[] = [];
   taskStatus = TaskStatus;
+  projects: ProjectDto[] = [];
 
   // --- TRẠNG THÁI UI ---
   loading = false;
@@ -31,6 +34,7 @@ export class List implements OnInit {
   filterText = ''; // Biến tìm kiếm
   filterStatus: TaskStatus | null = null;
   filterAssignedUserId: string | null = null;
+  filterProjectId: string | null = null;
   sorting = ''; // Biến lưu chuỗi sắp xếp (vd: "Title ASC")
 
   pageSize = 10;
@@ -38,15 +42,17 @@ export class List implements OnInit {
 
   form: FormGroup;
   currentUserId: string;
-  isAdmin = false;
+  isAdmin: boolean;
 
   // --- INJECT SERVICES ---
+  private readonly route = inject(ActivatedRoute);
   public readonly list = inject(ListService);
   private readonly taskService = inject(TaskService);
   private readonly fb = inject(FormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly confirmation = inject(ConfirmationService);
   private readonly config = inject(ConfigStateService);
+  private readonly projectService = inject(ProjectService);
 
   ngOnInit() {
     // 1. Lấy thông tin User hiện tại
@@ -58,6 +64,8 @@ export class List implements OnInit {
     this.taskService.getUserLookup().subscribe(result => {
       this.users = result.items;
     });
+
+    this.loadProjects();
 
     // 3. Khởi tạo Form
     this.buildForm();
@@ -71,6 +79,7 @@ export class List implements OnInit {
         filterText: this.filterText,
         status: this.filterStatus,
         assignedUserId: this.filterAssignedUserId,
+        projectId: this.filterProjectId,
         sorting: this.sorting,
       });
     };
@@ -132,6 +141,12 @@ export class List implements OnInit {
     this.list.get();
   }
 
+  loadProjects() {
+    this.projectService.getList({ maxResultCount: 100, skipCount: 0 }).subscribe(res => {
+      this.projects = res.items;
+    });
+  }
+
   // --- LOGIC FORM (CREATE / EDIT) ---
 
   buildForm() {
@@ -139,32 +154,54 @@ export class List implements OnInit {
       title: ['', [Validators.required, Validators.maxLength(256)]],
       description: [null],
       status: [TaskStatus.New, [Validators.required]],
-      assignedUserId: [null],
+      dueDate: [null],
+      assignedUserIds: [[]],
+      projectId: [null, [Validators.required]],
+    });
+    this.form.get('projectId').valueChanges.subscribe(() => {
+      // Mỗi khi Dự án bị đổi, tự động xóa trắng ô chọn Người thực hiện
+      this.form.get('assignedUserIds').setValue([]);
     });
   }
 
   createTask() {
     this.isEditMode = false;
     this.selectedTaskId = '';
-    this.form.reset({ status: TaskStatus.New });
+    this.form.reset({ status: TaskStatus.New, projectId: this.filterProjectId });
+    this.loadProjects();
     this.form.enable(); // Mở khóa tất cả input
     this.isModalOpen = true;
   }
 
   editTask(task: TaskDto) {
+    if (this.projects.length === 0) this.loadProjects();
+    if (this.users.length === 0) {
+      this.taskService.getUserLookup().subscribe(result => {
+        this.users = result.items;
+      });
+    }
+
     this.isEditMode = true;
     this.selectedTaskId = task.id;
-    this.form.enable(); // Mặc định là enable hết
-    this.form.patchValue(task);
+    this.form.enable();
+
+    // 2. Sử dụng patchValue với dữ liệu chuẩn hóa
+    this.form.patchValue({
+      ...task,
+      dueDate: task.dueDate ? new Date(task.dueDate) : null,
+      projectId: task.projectId,
+      assignedUserIds: task.assignedUserIds || [],
+    });
 
     // Logic phân quyền: Nếu là Assignee (nhưng ko phải Creator/Admin) -> Chỉ cho sửa Status
     const isCreator = task.creatorId === this.currentUserId;
-    const isAssignee = task.assignedUserId === this.currentUserId;
+    const isAssignee = task.assignedUserIds?.includes(this.currentUserId);
 
     if (isAssignee && !isCreator && !this.isAdmin) {
       this.form.get('title')?.disable();
       this.form.get('description')?.disable();
-      this.form.get('assignedUserId')?.disable();
+      this.form.get('assignedUserIds')?.disable();
+      this.form.get('dueDate')?.disable();
       // Chỉ để lại 'status' là enable
     }
 
@@ -215,13 +252,18 @@ export class List implements OnInit {
   canUpdate(task: TaskDto): boolean {
     return (
       this.isAdmin ||
+      task.projectManagerId === this.currentUserId ||
       task.creatorId === this.currentUserId ||
-      task.assignedUserId === this.currentUserId
+      task.assignedUserIds?.includes(this.currentUserId)
     );
   }
 
   canDelete(task: TaskDto): boolean {
-    return this.isAdmin || task.creatorId === this.currentUserId;
+    return (
+      this.isAdmin ||
+      task.projectManagerId === this.currentUserId ||
+      task.creatorId === this.currentUserId
+    );
   }
 
   getStatusColor(status: TaskStatus): string {
@@ -248,5 +290,24 @@ export class List implements OnInit {
       default:
         return '';
     }
+  }
+
+  get validAssignees(): UserLookupDto[] {
+    // Lấy giá trị của ô Dự án đang được chọn trong Form
+    const selectedProjectId = this.form?.get('projectId')?.value;
+
+    if (!selectedProjectId || !this.projects) return [];
+
+    // Tìm thông tin dự án đó trong mảng projects (mảng đang dùng để render dropdown Dự án)
+    const selectedProject = this.projects.find(p => p.id === selectedProjectId);
+
+    if (!selectedProject) return [];
+
+    // Lọc ra những người là PM hoặc nằm trong MemberIds của dự án đó
+    return this.users.filter(
+      u =>
+        u.id === selectedProject.managerId ||
+        (selectedProject.memberIds && selectedProject.memberIds.includes(u.id)),
+    );
   }
 }

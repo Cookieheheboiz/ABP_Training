@@ -1,5 +1,6 @@
 import { authGuard, permissionGuard } from '@abp/ng.core';
 import { Routes } from '@angular/router';
+import { eLayoutType } from '@abp/ng.core';
 
 export const APP_ROUTES: Routes = [
   {
@@ -30,5 +31,9 @@ export const APP_ROUTES: Routes = [
     data: {
       requiredPolicy: 'TaskManagement.Tasks',
     },
+  },
+  {
+    path: 'projects',
+    loadChildren: () => import('./projects/projects-module').then(m => m.ProjectsModule),
   },
 ];

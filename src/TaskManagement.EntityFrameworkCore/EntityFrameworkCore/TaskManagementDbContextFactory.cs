@@ -25,7 +25,7 @@ public class TaskManagementDbContextFactory : IDesignTimeDbContextFactory<TaskMa
     private static IConfigurationRoot BuildConfiguration()
     {
         var builder = new ConfigurationBuilder()
-            .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../TaskManagement.DbMigrator/"))
+            .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../TaskManagement.HttpApi.Host/"))
             .AddJsonFile("appsettings.json", optional: false)
             .AddEnvironmentVariables();
 

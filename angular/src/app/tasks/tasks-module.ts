@@ -18,6 +18,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 
 const routes: Routes = [{ path: '', component: List }];
 
@@ -40,6 +41,7 @@ const routes: Routes = [{ path: '', component: List }];
     NzFormModule,
     NzInputModule,
     NzSelectModule,
+    NzDatePickerModule,
   ],
 })
 export class TasksModule {}

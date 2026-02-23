@@ -31,7 +31,7 @@ namespace TaskManagement.Tasks
             var task = result.Items.FirstOrDefault(t => t.Title == "Test Task 1");
             task.ShouldNotBeNull();
 
-            task.AssignedUserName.ShouldBe("user1");
+            task.AssignedUserNames.ShouldContain("user1");
         }
 
         [Fact]

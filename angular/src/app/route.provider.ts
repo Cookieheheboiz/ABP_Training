@@ -25,5 +25,12 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'TaskManagement.Tasks',
     },
+    {
+      path: '/projects',
+      name: '::Menu:Projects',
+      iconClass: 'fas fa-project-diagram',
+      order: 3,
+      layout: eLayoutType.application,
+    },
   ]);
 }

@@ -11,6 +11,14 @@ export class TaskService {
   apiName = 'Default';
   
 
+  approveTask = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/task/${id}/approve`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   create = (input: CreateUpdateTaskDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TaskDto>({
       method: 'POST',
@@ -40,7 +48,7 @@ export class TaskService {
     this.restService.request<any, PagedResultDto<TaskDto>>({
       method: 'GET',
       url: '/api/task',
-      params: { filterText: input.filterText, status: input.status, assignedUserId: input.assignedUserId, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { filterText: input.filterText, status: input.status, assignedUserId: input.assignedUserId, projectId: input.projectId, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   

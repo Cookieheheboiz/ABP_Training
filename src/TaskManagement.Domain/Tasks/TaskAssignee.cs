@@ -10,11 +10,19 @@ namespace TaskManagement.Tasks
         public Guid TaskId { get; set; }
         public Guid UserId { get; set; }
 
-        // Constructor
+        protected TaskAssignee() { }
+
         public TaskAssignee(Guid taskId, Guid userId)
         {
+            Id = Guid.NewGuid();
+
             TaskId = taskId;
             UserId = userId;
+        }
+
+        public override object[] GetKeys()
+        {
+            return new object[] { Id };
         }
     }
 }

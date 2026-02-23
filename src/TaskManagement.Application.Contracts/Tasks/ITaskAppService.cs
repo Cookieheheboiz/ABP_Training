@@ -14,5 +14,6 @@ namespace TaskManagement.Tasks
         CreateUpdateTaskDto>    
     {
         Task<ListResultDto<UserLookupDto>> GetUserLookupAsync();
+        Task ApproveTaskAsync(Guid id);
     }
 }

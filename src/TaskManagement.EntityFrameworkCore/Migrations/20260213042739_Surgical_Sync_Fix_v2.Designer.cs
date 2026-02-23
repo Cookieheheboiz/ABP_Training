@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManagement.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TaskManagement.Migrations
 {
     [DbContext(typeof(TaskManagementDbContext))]
-    partial class TaskManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260213042739_Surgical_Sync_Fix_v2")]
+    partial class Surgical_Sync_Fix_v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,6 +56,7 @@ namespace TaskManagement.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExtraProperties")
@@ -79,24 +83,12 @@ namespace TaskManagement.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
 
                     b.ToTable("AppProjects", (string)null);
-                });
-
-            modelBuilder.Entity("TaskManagement.Projects.ProjectMember", b =>
-                {
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ProjectId", "UserId");
-
-                    b.ToTable("AppProjectMembers", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Tasks.TaskAssignee", b =>
@@ -2052,15 +2044,6 @@ namespace TaskManagement.Migrations
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
                 });
 
-            modelBuilder.Entity("TaskManagement.Projects.ProjectMember", b =>
-                {
-                    b.HasOne("TaskManagement.Projects.Project", null)
-                        .WithMany("Members")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("TaskManagement.Tasks.TaskAssignee", b =>
                 {
                     b.HasOne("TaskManagement.Tasks.TaskItem", null)
@@ -2230,11 +2213,6 @@ namespace TaskManagement.Migrations
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("TaskManagement.Projects.Project", b =>
-                {
-                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("TaskManagement.Tasks.TaskItem", b =>
