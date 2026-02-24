@@ -27,6 +27,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzListModule } from 'ng-zorro-antd/list';
 
 const routes: Routes = [
   {
@@ -69,6 +70,7 @@ const routes: Routes = [
     NzToolTipModule,
     NzTableModule,
     NzDatePickerModule,
+    NzListModule,
   ],
 })
 export class ProjectsModule {}

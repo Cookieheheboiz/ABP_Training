@@ -35,5 +35,9 @@ export const APP_ROUTES: Routes = [
   {
     path: 'projects',
     loadChildren: () => import('./projects/projects-module').then(m => m.ProjectsModule),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'TaskManagement.Projects',
+    },
   },
 ];

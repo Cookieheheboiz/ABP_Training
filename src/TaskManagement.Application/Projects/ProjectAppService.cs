@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TaskManagement.Tasks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
@@ -15,6 +16,7 @@ using Volo.Abp.Identity;
 namespace TaskManagement.Projects
 {
     // Kế thừa CrudAppService để có sẵn các hàm CRUD cơ bản (Create, Update, Delete)
+    [Authorize]
     public class ProjectAppService : CrudAppService<
             Project,
             ProjectDto,
@@ -38,6 +40,12 @@ namespace TaskManagement.Projects
 
         public override async Task<ProjectDto> CreateAsync(CreateUpdateProjectDto input)
         {
+            await CheckPolicyAsync(CreatePolicyName);
+            if (!CurrentUser.IsInRole("admin") && !CurrentUser.IsInRole("manager"))
+            {
+                throw new UserFriendlyException(L["Only admin and manager can create project!"]);
+            }
+
             var entity = new Project(
                 GuidGenerator.Create(),
                 input.Name,
@@ -64,6 +72,7 @@ namespace TaskManagement.Projects
 
         public override async Task<ProjectDto> UpdateAsync(Guid id, CreateUpdateProjectDto input)
         {
+            await CheckPolicyAsync(UpdatePolicyName);
             var queryable = await Repository.GetQueryableAsync();
             // Phải Include Members để Entity Framework biết mà xóa/sửa
             var project = await AsyncExecuter.FirstOrDefaultAsync(
@@ -71,6 +80,11 @@ namespace TaskManagement.Projects
             );
 
             if (project == null) throw new EntityNotFoundException(typeof(Project), id);
+            
+            if (!CurrentUser.IsInRole("admin") && project.ManagerId != CurrentUser.Id)
+            {
+                throw new UserFriendlyException(L["Only admin or PM can update this project!"]);
+            }
 
             // Cập nhật thông tin cơ bản
             project.Name = input.Name;
@@ -95,6 +109,21 @@ namespace TaskManagement.Projects
             }
             return dto;
         }
+
+        public override async Task DeleteAsync(Guid id)
+        {
+            await CheckPolicyAsync(DeletePolicyName);
+
+            var project = await Repository.GetAsync(id);
+
+            if (!CurrentUser.IsInRole("admin") && project.ManagerId != CurrentUser.Id)
+            {
+                throw new UserFriendlyException(L["Only admin or PM can delete this project!"]);
+            }
+
+            await base.DeleteAsync(id);
+        }
+
         public override async Task<PagedResultDto<ProjectDto>> GetListAsync(GetProjectsInput input)
         {
             var currentUserId = CurrentUser.Id;

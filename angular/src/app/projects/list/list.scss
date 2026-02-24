@@ -1,0 +1,35 @@
+.custom-project-card {
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  /* Hiệu ứng nảy lên và hiện bóng mờ khi Hover */
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    border-color: #e6f7ff;
+  }
+
+  .action-btn {
+    border-radius: 4px;
+    transition: background 0.2s;
+    &:hover {
+      background: #f0f0f0;
+    }
+  }
+}
+
+/* Cắt chữ ở dòng thứ 2 nếu dài quá */
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Tùy chỉnh màu nền cho Avatar PM */
+.bg-primary-subtle {
+  background-color: #e6f7ff !important;
+}

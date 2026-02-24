@@ -28,4 +28,7 @@ export const environment = {
       rootNamespace: 'AbpAccountPublic',
     },
   },
+  timing: {
+    timeZone: 'SE Asia Standard Time',
+  },
 } as Environment;

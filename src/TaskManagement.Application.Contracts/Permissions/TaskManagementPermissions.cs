@@ -11,4 +11,12 @@ public static class TaskManagementPermissions
         public const string Update = Default + ".Update";
         public const string Delete = Default + ".Delete";
     }
+
+    public static class Projects
+    {
+        public const string Default = GroupName + ".Projects";
+        public const string Create = Default + ".Create";
+        public const string Update = Default + ".Update";
+        public const string Delete = Default + ".Delete";
+    }
 }

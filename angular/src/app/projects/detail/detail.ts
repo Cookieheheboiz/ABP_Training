@@ -147,9 +147,20 @@ export class DetailComponent implements OnInit {
   editTask(task: TaskDto) {
     this.isEditMode = true;
     this.selectedTaskId = task.id;
+
+    let dueDate = null;
+    if (task.dueDate) {
+      const dateStr = task.dueDate.endsWith('Z') ? task.dueDate : task.dueDate + 'Z';
+      const utcDate = new Date(dateStr);
+      if (!isNaN(utcDate.getTime())) {
+        const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
+        dueDate = localDate.toISOString().slice(0, 16);
+      }
+    }
+
     this.form.patchValue({
       ...task,
-      dueDate: task.dueDate ? new Date(task.dueDate) : null,
+      dueDate,
       assignedUserIds: task.assignedUserIds || [],
     });
 
@@ -171,6 +182,11 @@ export class DetailComponent implements OnInit {
 
     //Dùng getRawValue() thay vì form.value để lấy được cả dữ liệu của các ô bị disable
     const input = this.form.getRawValue();
+
+    if (input.dueDate) {
+      // Gửi lên dưới dạng UTC ISO string
+      input.dueDate = new Date(input.dueDate).toISOString();
+    }
 
     const request = this.isEditMode
       ? this.taskService.update(this.selectedTaskId, input)

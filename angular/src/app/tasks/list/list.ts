@@ -193,6 +193,14 @@ export class List implements OnInit {
       assignedUserIds: task.assignedUserIds || [],
     });
 
+    if (task.isApproved) {
+      this.form.get('projectId')?.disable();
+      this.form.get('title')?.disable();
+      this.form.get('description')?.disable();
+      this.form.get('dueDate')?.disable();
+      // Chỉ còn ô Status và AssignedUserIds là được phép thao tác
+    }
+
     // Logic phân quyền: Nếu là Assignee (nhưng ko phải Creator/Admin) -> Chỉ cho sửa Status
     const isCreator = task.creatorId === this.currentUserId;
     const isAssignee = task.assignedUserIds?.includes(this.currentUserId);

@@ -31,6 +31,7 @@ function configureRoutes() {
       iconClass: 'fas fa-project-diagram',
       order: 3,
       layout: eLayoutType.application,
+      requiredPolicy: 'TaskManagement.Projects',
     },
   ]);
 }

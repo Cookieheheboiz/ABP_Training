@@ -10,7 +10,7 @@ import { registerLocaleForEsBuild } from '@abp/ng.core/locale';
 import { provideThemeLeptonX } from '@abp/ng.theme.lepton-x';
 import { provideSideMenuLayout } from '@abp/ng.theme.lepton-x/layouts';
 import { provideLogo, withEnvironmentOptions } from '@abp/ng.theme.shared';
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { environment } from '../environments/environment';
@@ -28,7 +28,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(APP_ROUTES),
     APP_ROUTE_PROVIDER,
     provideAnimations(),
-    { provide: NZ_I18N, useValue: en_US },
+    { provide: NZ_I18N, useValue: vi_VN },
+    { provide: LOCALE_ID, useValue: 'vi-VN' },
     provideAbpCore(
       withOptions({
         environment,

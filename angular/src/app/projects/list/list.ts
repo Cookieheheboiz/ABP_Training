@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { ConfigStateService } from '@abp/ng.core';
 
 @Component({
   selector: 'app-project-list',
@@ -31,6 +32,7 @@ export class ProjectListComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly confirmation = inject(ConfirmationService);
+  private readonly config = inject(ConfigStateService);
 
   users: any[] = [];
 
@@ -130,7 +132,7 @@ export class ProjectListComponent implements OnInit {
     this.confirmation.warn('::AreYouSureToDelete', '::ConfirmDelete').subscribe(status => {
       if (status === Confirmation.Status.confirm) {
         this.projectService.delete(id).subscribe(() => {
-          this.message.success('::SuccessfullyDeleted');
+          this.message.success('::Successfully Deleted');
           this.loadData();
         });
       }
@@ -148,5 +150,17 @@ export class ProjectListComponent implements OnInit {
     let hash = 0;
     for (let i = 0; i < name?.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash % colors.length)];
+  }
+
+  get currentUserId(): string {
+    return this.config.getOne('currentUser')?.id;
+  }
+
+  get isAdmin(): boolean {
+    return this.config.getOne('currentUser')?.roles.includes('admin');
+  }
+
+  canEditOrDelete(project: ProjectDto): boolean {
+    return this.isAdmin || project.managerId === this.currentUserId;
   }
 }

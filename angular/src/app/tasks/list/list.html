@@ -172,7 +172,7 @@
             <span
               [class.text-danger]="task.dueDate && (task.dueDate | date:'yyyyMMdd') < (today | date:'yyyyMMdd')"
             >
-              {{ task.dueDate ? (task.dueDate | date:'dd/MM/yyyy') : '-' }}
+              {{ task.dueDate ? (task.dueDate | date:'dd/MM/yyyy HH:mm') : '-' }}
             </span>
           </td>
 
@@ -320,8 +320,10 @@
             <nz-form-control>
               <nz-date-picker
                 formControlName="dueDate"
+                nzPlaceHolder="{{ '::Select date' | abpLocalization}}"
                 style="width: 100%"
-                [nzFormat]="'dd/MM/yyyy'"
+                nzShowTime
+                nzFormat="dd/MM/yyyy HH:mm"
               ></nz-date-picker>
             </nz-form-control>
           </nz-form-item>
