@@ -1,6 +1,6 @@
 {
-  "culture": "vi",
-  "texts": {
+  "Culture": "vi",
+  "Texts": {
     "Menu:Home": "Trang chủ",
     "Welcome": "Xin chào",
     "Menu:TaskManagement": "Quản lý công việc",
@@ -72,6 +72,10 @@
     "Only admin and manager can create project!": "Chỉ có admin hoặc manager mới tạo được dự án này",
     "Only admin or PM can update this project!": "Chỉ có admin hoặc quản lý dự án mới cập nhật được dự án này",
     "Only admin or PM can delete this project!": "Chỉ có admin hoặc quản lý dự án mới cập nhật được dự án này",
+    "DuplicateTaskError": "Đã tồn tại một công việc có nội dung, mô tả và hạn chót y hệt trong dự án này!",
+    "Error: The assigned person is not part of the project!": "Lỗi: Người được giao không thuộc dự án!",
+    "The project doesn't exist!": "Dự án không tồn tại!",
+    "Only Project Managers or Admins have the authority to approve!": "Chỉ Quản lý dự án hoặc Admin mới có quyền phê duyệt!",
 
     "Menu:Projects": "Danh sách dự án",
     "Projects": "Dự án",

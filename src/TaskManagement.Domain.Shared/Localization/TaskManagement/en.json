@@ -16,6 +16,7 @@
     "Permission:Tasks.Delete": "Delete Task",
     "TaskDeletionForbidden": "You can not delete this task!",
     "TaskUpdateForbidden": "You can not update this task!",
+    "DuplicateTaskError": "There already exists a job with identical content, description, and deadline in this project!",
 
     "TotalTasks": "TOTAL TASKS",
     "InProgressTasks": "IN PROGRESS TASK",

@@ -54,6 +54,25 @@ namespace TaskManagement.Tasks
 
             if (project == null) throw new UserFriendlyException(L["Not Found Project"]);
 
+            var isDuplicate = await Repository.AnyAsync(x =>
+                x.ProjectId == input.ProjectId &&
+                x.Title == input.Title &&
+                x.Description == input.Description &&
+                x.DueDate.HasValue == input.DueDate.HasValue &&
+                (!x.DueDate.HasValue || (
+                    x.DueDate.Value.Year == input.DueDate.Value.Year &&
+                    x.DueDate.Value.Month == input.DueDate.Value.Month &&
+                    x.DueDate.Value.Day == input.DueDate.Value.Day &&
+                    x.DueDate.Value.Hour == input.DueDate.Value.Hour &&
+                    x.DueDate.Value.Minute == input.DueDate.Value.Minute
+                ))
+            );
+
+            if (isDuplicate)
+            {
+                throw new UserFriendlyException(L["There already exists a job with identical content, description, and deadline in this project!"]);
+            }
+
             var validUserIds = project.Members.Select(m => m.UserId).ToList();
             validUserIds.Add(project.ManagerId);
 
@@ -121,7 +140,7 @@ namespace TaskManagement.Tasks
                 var targetProject = await projectQuery.Include(x => x.Members)
                                                       .FirstOrDefaultAsync(x => x.Id == targetProjectId);
 
-                if (targetProject == null) throw new UserFriendlyException("Dự án mục tiêu không tồn tại!");
+                if (targetProject == null) throw new UserFriendlyException(L["The project doesn't exist!"]);
 
                 var validUserIds = targetProject.Members.Select(m => m.UserId).ToList();
                 validUserIds.Add(targetProject.ManagerId);
@@ -134,13 +153,33 @@ namespace TaskManagement.Tasks
                     {
                         foreach (var userId in input.AssignedUserIds)
                         {
-                            if (!validUserIds.Contains(userId)) throw new UserFriendlyException("Lỗi: Người được giao không thuộc dự án!");
+                            if (!validUserIds.Contains(userId)) throw new UserFriendlyException(L["Error: The assigned person is not part of the project!"]);
                             task.AddAssignee(userId);
                         }
                     }
                 }
                 else
                 {
+                    var isDuplicate = await Repository.AnyAsync(x => 
+                        x.ProjectId == input.ProjectId &&
+                        x.Title == input.Title &&
+                        x.Description == input.Description &&
+    
+                        x.DueDate.HasValue == input.DueDate.HasValue &&
+                        (!x.DueDate.HasValue || (
+                            x.DueDate.Value.Year == input.DueDate.Value.Year &&
+                            x.DueDate.Value.Month == input.DueDate.Value.Month &&
+                            x.DueDate.Value.Day == input.DueDate.Value.Day &&
+                            x.DueDate.Value.Hour == input.DueDate.Value.Hour &&
+                            x.DueDate.Value.Minute == input.DueDate.Value.Minute
+                        ))
+                    );
+
+                    if (isDuplicate)
+                    {
+                        throw new UserFriendlyException(L["DuplicateTaskError"]);
+                    }
+
                     task.Title = input.Title;
                     task.Description = input.Description;
                     task.Status = input.Status;
@@ -289,7 +328,7 @@ namespace TaskManagement.Tasks
             }
             else
             {
-                throw new UserFriendlyException("Chỉ Quản lý dự án hoặc Admin mới có quyền phê duyệt!");
+                throw new UserFriendlyException(L["Only Project Managers or Admins have the authority to approve!"]);
             }
         }
     }
