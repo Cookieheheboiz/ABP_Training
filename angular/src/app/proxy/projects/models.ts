@@ -13,7 +13,7 @@ export interface GetProjectsInput extends PagedAndSortedResultRequestDto {
 
 export interface ProjectDto extends AuditedEntityDto<string> {
   name?: string;
-  description?: string;
+  description?: string | null;
   managerId?: string;
   managerName?: string;
   memberIds?: string[];

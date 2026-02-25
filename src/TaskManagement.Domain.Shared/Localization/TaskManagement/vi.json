@@ -5,7 +5,9 @@
     "Welcome": "Xin chào",
     "Menu:TaskManagement": "Quản lý công việc",
     "Menu:Tasks": "Danh sách công việc",
-    "Form": "...",
+    "Form::Completed": "Hoàn thành",
+    "Form::In Progress": "Đang làm",
+    "Form::New": "Mới tạo",
 
     "Permission:TaskManagement": "Quản lý công việc",
     "Permission:Tasks": "Quản lý Tasks",
@@ -76,6 +78,11 @@
     "Error: The assigned person is not part of the project!": "Lỗi: Người được giao không thuộc dự án!",
     "The project doesn't exist!": "Dự án không tồn tại!",
     "Only Project Managers or Admins have the authority to approve!": "Chỉ Quản lý dự án hoặc Admin mới có quyền phê duyệt!",
+    "Propose": "Đề xuất",
+    "Pending Tasks_": "Chờ duyệt",
+    "Confirm Reject Task?": "Xác nhận không duyệt?",
+    "Approve": "Đồng ý",
+    "Reject": "Từ chối",
 
     "Menu:Projects": "Danh sách dự án",
     "Projects": "Dự án",
@@ -91,6 +98,12 @@
     "Enter project description": "Mô tả nội dung dự án",
     "For example: Develop mobile app...": "Ví dụ: Phát triển App Mobile...",
     "Please enter project name": "Vui lòng nhập tên dự án",
+
+    "All overdue tasks": "Tất cả công việc quá hạn",
+    "Incomplete overdue tasks": "Chưa hoàn thành",
+    "Completed overdue tasks": "Đã hoàn thành",
+    "Overdue Tasks": "Danh sách công việc quá hạn",
+    "Pending Tasks": "Danh sách công việc chờ phê duyệt",
 
     "Enum:TaskStatus.0": "Mới tạo",
     "Enum:TaskStatus.1": "Đang làm",

@@ -43,18 +43,136 @@ export class DetailComponent implements OnInit {
   private confirmation = inject(ConfirmationService);
   private config = inject(ConfigStateService);
 
-  // --- THỐNG KÊ (TÍNH TOÁN TẠI FRONTEND) ---
-  get stats() {
-    const items = this.taskData.items || [];
-    return {
-      total: items.length,
-      inProgress: items.filter(t => t.status === TaskStatus.InProgress).length,
-      completed: items.filter(t => t.status === TaskStatus.Completed).length,
-      overdue: items.filter(
-        t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== TaskStatus.Completed,
-      ).length,
-      pending: items.filter(t => !t.isApproved).length,
+  isOverdueModalVisible = false;
+  isPendingModalVisible = false;
+  filterTaskText = '';
+  filterTaskStatus: number | null = null;
+  filterTaskUserIds: string[] = [];
+
+  pageIndex = 1;
+  pageSize = 10;
+  totalCount = 0;
+
+  projectStats = { total: 0, inProgress: 0, completed: 0, overdue: 0, pending: 0 };
+
+  // Xử lý bộ lọc công việc quá hạn
+  overdueFilterStatus: 'all' | 'incomplete' | 'completed' = 'all';
+  allOverdueTasks: TaskDto[] = [];
+  isLoadingOverdue = false;
+
+  showOverdueModal() {
+    this.isOverdueModalVisible = true;
+    this.isLoadingOverdue = true;
+    this.overdueFilterStatus = 'all'; // Reset bộ lọc về Tất cả
+
+    // Gọi API lấy tối đa 1000 task để không bị sót dữ liệu của dự án
+    this.taskService
+      .getList({
+        projectId: this.projectId,
+        maxResultCount: 1000,
+        skipCount: 0,
+      })
+      .subscribe(res => {
+        const now = new Date().getTime();
+        // Vét toàn bộ task có hạn chót < hiện tại
+        this.allOverdueTasks = res.items.filter(
+          t => t.dueDate && new Date(t.dueDate).getTime() < now,
+        );
+        this.isLoadingOverdue = false;
+      });
+  }
+
+  get displayOverdueTasks() {
+    if (this.overdueFilterStatus === 'incomplete') {
+      return this.allOverdueTasks.filter(t => t.status !== this.taskStatus.Completed);
+    }
+    if (this.overdueFilterStatus === 'completed') {
+      return this.allOverdueTasks.filter(t => t.status === this.taskStatus.Completed);
+    }
+    return this.allOverdueTasks;
+  }
+
+  // Phân trang
+  pageIndexChange(index: number) {
+    this.list.page = index - 1; // ABP tính trang từ 0, Ng-Zorro tính từ 1
+  }
+
+  loadData() {
+    this.loading = true;
+    const requestPayload = {
+      projectId: this.projectId,
+      maxResultCount: this.pageSize,
+      skipCount: (this.pageIndex - 1) * this.pageSize,
+
+      filterText: this.filterTaskText,
+      status: this.filterTaskStatus,
+      assignedUserId: this.filterTaskUserIds.length > 0 ? this.filterTaskUserIds[0] : null,
     };
+
+    this.taskService.getList(requestPayload).subscribe({
+      next: (res: any) => {
+        this.taskData = res;
+        this.totalCount = res.totalCount || res.TotalCount || 0;
+        this.loading = false;
+      },
+    });
+  }
+
+  get projectAssignees() {
+    const assigneesMap = new Map<string, string>();
+    const items = this.taskData?.items || [];
+
+    // Quét qua toàn bộ task, gom nhặt ID và Tên của những người được giao việc
+    items.forEach(task => {
+      if (task.assignedUserIds && task.assignedUserIds.length > 0) {
+        task.assignedUserIds.forEach((id: string, index: number) => {
+          // Lấy tên tương ứng, nếu không có thì để tạm là 'Unknown User'
+          const name = task.assignedUserNames ? task.assignedUserNames[index] : 'Unknown User';
+          assigneesMap.set(id, name);
+        });
+      }
+    });
+
+    // Trả về một mảng gọn gàng để binding lên dropdown
+    return Array.from(assigneesMap.entries()).map(([id, name]) => ({ id, name }));
+  }
+
+  // 3. Getter tự động lọc danh sách công việc
+  get filteredTasks() {
+    let tasks = this.taskData?.items || [];
+
+    // Lọc theo từ khóa (Tìm trong Tiêu đề)
+    if (this.filterTaskText) {
+      const text = this.filterTaskText.toLowerCase();
+      tasks = tasks.filter(t => t.title?.toLowerCase().includes(text));
+    }
+
+    // Lọc theo Trạng thái (Phải check khác null/undefined vì status 0 có thể bị tính là false)
+    if (this.filterTaskStatus !== null && this.filterTaskStatus !== undefined) {
+      tasks = tasks.filter(t => t.status === this.filterTaskStatus);
+    }
+
+    // Lọc theo Nhiều Người thực hiện
+    if (this.filterTaskUserIds && this.filterTaskUserIds.length > 0) {
+      tasks = tasks.filter(t => {
+        // Nếu task này không có ai làm -> chắc chắn không thỏa mãn -> loại
+        if (!t.assignedUserIds || t.assignedUserIds.length === 0) return false;
+
+        // Trả về true CHỈ KHI toàn bộ các ID trong bộ lọc đều nằm trong danh sách người làm task
+        return this.filterTaskUserIds.every(filterId => t.assignedUserIds.includes(filterId));
+      });
+    }
+
+    return tasks;
+  }
+
+  get pendingTasks() {
+    const items = this.taskData.items || [];
+    return items.filter(t => !t.isApproved);
+  }
+
+  get stats() {
+    return this.projectStats;
   }
 
   getStatusColor(status: TaskStatus): string {
@@ -67,6 +185,19 @@ export class DetailComponent implements OnInit {
         return 'green';
       default:
         return 'default';
+    }
+  }
+
+  getStatusText(status: TaskStatus): string {
+    switch (status) {
+      case TaskStatus.New:
+        return '::Enum:TaskStatus.0';
+      case TaskStatus.InProgress:
+        return '::Enum:TaskStatus.1';
+      case TaskStatus.Completed:
+        return '::Enum:TaskStatus.2';
+      default:
+        return '';
     }
   }
 
@@ -99,11 +230,27 @@ export class DetailComponent implements OnInit {
     this.loadUsers();
     this.buildForm();
 
-    // Hook vào bảng Task, tự động lọc theo ProjectId này
     const streamCreator = query => {
       this.loading = true;
-      return this.taskService.getList({ ...query, projectId: this.projectId });
+      this.taskService.getProjectStats(this.projectId).subscribe(res => {
+        this.projectStats = {
+          total: res.totalTasks,
+          inProgress: res.inProgressTasks,
+          completed: res.completedTasks,
+          overdue: res.overdueTasks,
+          pending: res.pendingTasks,
+        };
+      });
+
+      return this.taskService.getList({
+        ...query,
+        projectId: this.projectId,
+        filterText: this.filterTaskText,
+        status: this.filterTaskStatus,
+        assignedUserId: this.filterTaskUserIds.length > 0 ? this.filterTaskUserIds[0] : undefined,
+      });
     };
+
     this.list.hookToQuery(streamCreator).subscribe(res => {
       this.taskData = res;
       this.loading = false;
@@ -234,5 +381,11 @@ export class DetailComponent implements OnInit {
       this.project?.managerId === this.currentUserId ||
       task.creatorId === this.currentUserId
     );
+  }
+
+  clearFilters() {
+    this.filterTaskText = '';
+    this.filterTaskStatus = null;
+    this.filterTaskUserIds = [];
   }
 }

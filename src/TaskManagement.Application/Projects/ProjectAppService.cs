@@ -74,19 +74,23 @@ namespace TaskManagement.Projects
         {
             await CheckPolicyAsync(UpdatePolicyName);
             var queryable = await Repository.GetQueryableAsync();
-            // Phải Include Members để Entity Framework biết mà xóa/sửa
+
             var project = await AsyncExecuter.FirstOrDefaultAsync(
                 queryable.Include(x => x.Members).Where(x => x.Id == id)
             );
 
             if (project == null) throw new EntityNotFoundException(typeof(Project), id);
-            
+
             if (!CurrentUser.IsInRole("admin") && project.ManagerId != CurrentUser.Id)
             {
                 throw new UserFriendlyException(L["Only admin or PM can update this project!"]);
             }
 
-            // Cập nhật thông tin cơ bản
+            var oldMemberIds = project.Members.Select(x => x.UserId).ToList();
+            var newMemberIds = input.MemberIds ?? new List<Guid>();
+
+            var removedUserIds = oldMemberIds.Except(newMemberIds).ToList();
+
             project.Name = input.Name;
             project.Description = input.Description;
             project.ManagerId = input.ManagerId;
@@ -102,6 +106,24 @@ namespace TaskManagement.Projects
             }
 
             await Repository.UpdateAsync(project, autoSave: true);
+
+            if (removedUserIds.Any())
+            {
+                var taskQueryable = await _taskRepository.GetQueryableAsync();
+
+                var tasksToClean = await AsyncExecuter.ToListAsync(
+                    taskQueryable.Include(x => x.Assignees)
+                                 .Where(t => t.ProjectId == id && t.Assignees.Any(a => removedUserIds.Contains(a.UserId)))
+                );
+
+                foreach (var task in tasksToClean)
+                {
+                    task.Assignees.RemoveAll(a => removedUserIds.Contains(a.UserId));
+
+                    await _taskRepository.UpdateAsync(task, autoSave: true);
+                }
+            }
+
             var dto = ObjectMapper.Map<Project, ProjectDto>(project);
             if (project.Members != null)
             {

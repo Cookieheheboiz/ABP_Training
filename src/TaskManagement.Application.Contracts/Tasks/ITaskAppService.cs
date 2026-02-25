@@ -13,6 +13,7 @@ namespace TaskManagement.Tasks
         GetTasksInput,         
         CreateUpdateTaskDto>    
     {
+        Task<ProjectTaskStatsDto> GetProjectStatsAsync(Guid projectId);
         Task<ListResultDto<UserLookupDto>> GetUserLookupAsync();
         Task ApproveTaskAsync(Guid id);
     }

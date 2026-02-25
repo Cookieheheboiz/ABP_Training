@@ -305,6 +305,31 @@ namespace TaskManagement.Tasks
             return new PagedResultDto<TaskDto>(totalCount, taskDtos);
         }
 
+        public async Task<ProjectTaskStatsDto> GetProjectStatsAsync(Guid projectId)
+        {
+            var query = await Repository.GetQueryableAsync();
+
+            // Lọc lấy các task thuộc dự án này
+            query = query.Where(t => t.ProjectId == projectId);
+
+            // Kéo 3 cột cần thiết về RAM để đếm nhanh (1 lần query duy nhất)
+            var tasksData = await AsyncExecuter.ToListAsync(
+                query.Select(t => new { t.Status, t.IsApproved, t.DueDate })
+            );
+
+            var now = DateTime.Now; // Hoặc DateTime.UtcNow tùy thiết lập hệ thống của bạn
+
+            return new ProjectTaskStatsDto
+            {
+                TotalTasks = tasksData.Count,
+                InProgressTasks = tasksData.Count(t => t.Status == TaskStatus.InProgress),
+                CompletedTasks = tasksData.Count(t => t.Status == TaskStatus.Completed),
+                PendingTasks = tasksData.Count(t => !t.IsApproved),
+                // Task quá hạn là task có hạn chót < hiện tại VÀ chưa hoàn thành
+                OverdueTasks = tasksData.Count(t => t.DueDate.HasValue && t.DueDate.Value < now)
+            };
+        }
+
         public async Task<ListResultDto<UserLookupDto>> GetUserLookupAsync()
         {
             var users = await _userRepository.GetListAsync();

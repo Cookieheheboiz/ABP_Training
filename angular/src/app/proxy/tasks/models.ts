@@ -18,6 +18,14 @@ export interface GetTasksInput extends PagedAndSortedResultRequestDto {
   projectId?: string | null;
 }
 
+export interface ProjectTaskStatsDto {
+  totalTasks?: number;
+  inProgressTasks?: number;
+  completedTasks?: number;
+  overdueTasks?: number;
+  pendingTasks?: number;
+}
+
 export interface TaskDto extends AuditedEntityDto<string> {
   creatorId?: string | null;
   title?: string;

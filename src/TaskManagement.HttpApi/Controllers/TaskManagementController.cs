@@ -33,6 +33,13 @@ namespace TaskManagement.Tasks
         [HttpDelete("{id}")]
         public Task DeleteAsync(Guid id) => _taskAppService.DeleteAsync(id);
 
+        [HttpGet]
+        [Route("{projectId}/project-stats")]
+        public Task<ProjectTaskStatsDto> GetProjectStatsAsync(Guid projectId)
+        {
+            return _taskAppService.GetProjectStatsAsync(projectId);
+        }
+
         [HttpGet("user-lookup")]
         public Task<ListResultDto<UserLookupDto>> GetUserLookupAsync() => _taskAppService.GetUserLookupAsync();
 

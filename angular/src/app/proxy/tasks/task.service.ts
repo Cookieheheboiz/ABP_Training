@@ -1,4 +1,4 @@
-import type { CreateUpdateTaskDto, GetTasksInput, TaskDto, UserLookupDto } from './models';
+import type { CreateUpdateTaskDto, GetTasksInput, ProjectTaskStatsDto, TaskDto, UserLookupDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { ListResultDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -49,6 +49,14 @@ export class TaskService {
       method: 'GET',
       url: '/api/task',
       params: { filterText: input.filterText, status: input.status, assignedUserId: input.assignedUserId, projectId: input.projectId, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getProjectStats = (projectId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ProjectTaskStatsDto>({
+      method: 'GET',
+      url: `/api/task/${projectId}/project-stats`,
     },
     { apiName: this.apiName,...config });
   

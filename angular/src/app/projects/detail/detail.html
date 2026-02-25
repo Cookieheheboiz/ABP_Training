@@ -26,7 +26,12 @@
       </nz-card>
     </div>
     <div class="col-md-3">
-      <nz-card class="shadow-sm border-0 bg-danger-subtle border-start border-danger border-4">
+      <nz-card
+        class="shadow-sm border-0 bg-danger-subtle border-start border-danger border-4"
+        style="cursor: pointer; transition: all 0.3s ease"
+        nzHoverable
+        (click)="showOverdueModal()"
+      >
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <div class="text-danger small fw-bold">{{ '::Overdue' | abpLocalization }}</div>
@@ -37,7 +42,12 @@
       </nz-card>
     </div>
     <div class="col-md-3">
-      <nz-card class="shadow-sm border-0 bg-info-subtle border-start border-info border-4">
+      <nz-card
+        class="shadow-sm border-0 bg-info-subtle border-start border-info border-4"
+        style="cursor: pointer"
+        nzHoverable
+        (click)="isPendingModalVisible = true"
+      >
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <div class="text-info small fw-bold">{{ '::Pending' | abpLocalization }}</div>
@@ -55,7 +65,6 @@
         <span class="fw-bold"
           ><i class="fa fa-line-chart me-2"></i>{{ '::ProjectProgress' | abpLocalization }}</span
         >
-        <span class="badge bg-success">{{ progress }}%</span>
       </div>
       <nz-progress [nzPercent]="progress" nzStatus="active" [nzStrokeWidth]="12"></nz-progress>
     </div>
@@ -71,8 +80,73 @@
           <i class="fa fa-plus me-1"></i>{{ '::NewTask' | abpLocalization }}
         </button>
       </div>
+      <div
+        class="d-flex flex-wrap align-items-center gap-3 mb-4 bg-white p-3 rounded shadow-sm border border-light"
+      >
+        <nz-input-group [nzPrefix]="prefixIconSearch" style="width: 280px; border-radius: 8px">
+          <input
+            type="text"
+            nz-input
+            placeholder="{{ '::SearchPlaceholder' | abpLocalization }}"
+            [(ngModel)]="filterTaskText"
+          />
+        </nz-input-group>
+        <ng-template #prefixIconSearch><i class="fa fa-search text-muted"></i></ng-template>
 
-      <nz-table #taskTable [nzData]="taskData.items" [nzLoading]="loading">
+        <nz-select
+          style="min-width: 180px"
+          nzPlaceHolder="{{ '::FilterByStatus' | abpLocalization }}"
+          nzAllowClear
+          [(ngModel)]="filterTaskStatus"
+        >
+          <nz-option
+            [nzValue]="taskStatus.New"
+            [nzLabel]="'::Enum:TaskStatus.0' | abpLocalization"
+          ></nz-option>
+          <nz-option
+            [nzValue]="taskStatus.InProgress"
+            [nzLabel]="'::Enum:TaskStatus.1' | abpLocalization"
+          ></nz-option>
+          <nz-option
+            [nzValue]="taskStatus.Completed"
+            [nzLabel]="'::Enum:TaskStatus.2' | abpLocalization"
+          ></nz-option>
+        </nz-select>
+
+        <nz-select
+          style="min-width: 250px; flex: 1"
+          nzMode="multiple"
+          nzPlaceHolder="{{ '::FilterByUser' | abpLocalization }}"
+          nzAllowClear
+          nzShowSearch
+          [(ngModel)]="filterTaskUserIds"
+        >
+          <nz-option
+            *ngFor="let user of projectAssignees"
+            [nzValue]="user.id"
+            [nzLabel]="user.name"
+          ></nz-option>
+        </nz-select>
+        <button
+          nz-button
+          nzType="default"
+          nzDanger
+          (click)="clearFilters()"
+          nz-tooltip="{{ '::Clear' | abpLocalization }}"
+        >
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <nz-table
+        #taskTable
+        [nzData]="taskData.items"
+        [nzLoading]="loading"
+        [nzFrontPagination]="false"
+        [nzTotal]="taskData.totalCount"
+        [nzPageIndex]="list.page + 1"
+        [nzPageSize]="list.maxResultCount"
+        (nzPageIndexChange)="pageIndexChange($event)"
+      >
         <thead>
           <tr>
             <th>{{ '::Title' | abpLocalization }}</th>
@@ -88,7 +162,7 @@
             <td>
               <span class="fw-bold">{{ task.title }}</span>
               <span *ngIf="!task.isApproved" class="ms-2 badge bg-warning text-dark small"
-                >Đề xuất</span
+                >{{ '::Propose' | abpLocalization }}</span
               >
             </td>
             <td>
@@ -168,6 +242,149 @@
 </div>
 
 <nz-modal
+  [(nzVisible)]="isOverdueModalVisible"
+  nzTitle="{{ '::Overdue Tasks' | abpLocalization }}"
+  (nzOnCancel)="isOverdueModalVisible = false"
+  [nzFooter]="null"
+  nzWidth="800px"
+>
+  <ng-container *nzModalContent>
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+      <span class="fw-bold">{{ '::Display:' | abpLocalization }}</span>
+      <nz-select [(ngModel)]="overdueFilterStatus" style="width: 280px">
+        <nz-option
+          nzValue="all"
+          nzLabel="{{ '::All overdue tasks' | abpLocalization }}"
+        ></nz-option>
+        <nz-option
+          nzValue="incomplete"
+          nzLabel="{{ '::Incomplete overdue tasks' | abpLocalization }}"
+        ></nz-option>
+        <nz-option
+          nzValue="completed"
+          nzLabel="{{ '::Completed overdue tasks' | abpLocalization }}"
+        ></nz-option>
+      </nz-select>
+    </div>
+
+    <nz-table
+      #overdueTable
+      [nzData]="displayOverdueTasks"
+      [nzLoading]="isLoadingOverdue"
+      nzSize="small"
+      [nzFrontPagination]="true"
+      [nzPageSize]="5"
+    >
+      <thead>
+        <tr>
+          <th>{{ '::Title' | abpLocalization }}</th>
+          <th>{{ '::Status' | abpLocalization }}</th>
+          <th>{{ '::DueDate' | abpLocalization }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of overdueTable.data">
+          <td class="fw-medium">{{ task.title }}</td>
+          <td>
+            <nz-tag [nzColor]="getStatusColor(task.status)">
+              {{ '::Enum:TaskStatus.' + task.status | abpLocalization }}
+            </nz-tag>
+          </td>
+          <td class="text-danger fw-bold">
+            <i class="fa fa-exclamation-circle me-1"></i> {{ task.dueDate | date:'dd/MM/yyyy HH:mm'
+            }}
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [(nzVisible)]="isPendingModalVisible"
+  nzTitle="{{ '::Pending Tasks' | abpLocalization }}"
+  (nzOnCancel)="isPendingModalVisible = false"
+  [nzFooter]="null"
+  nzWidth="1000px"
+>
+  <ng-container *nzModalContent>
+    <nz-table
+      #pendingTable
+      [nzData]="pendingTasks"
+      nzSize="small"
+      [nzFrontPagination]="true"
+      [nzPageSize]="5"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="30%">{{ '::Title' | abpLocalization }}</th>
+          <th nzWidth="20%">{{ '::DueDate' | abpLocalization }}</th>
+          <th nzWidth="20%" nzAlign="center">{{ '::Status' | abpLocalization }}</th>
+          <th nzWidth="30%" nzAlign="center">{{ '::Actions' | abpLocalization }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of pendingTable.data">
+          <td class="fw-medium">
+            {{ task.title }}
+            <nz-tag nzColor="warning" class="ms-2 rounded-pill border-0"
+              >{{ '::Pending Tasks_' | abpLocalization }}</nz-tag
+            >
+          </td>
+          <td>{{ task.dueDate | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td nzAlign="center">
+            <nz-tag [nzColor]="getStatusColor(task.status)">
+              {{ '::Enum:TaskStatus.' + task.status | abpLocalization }}
+            </nz-tag>
+          </td>
+          <td nzAlign="center">
+            <div class="d-flex align-items-center justify-content-center gap-3">
+              <ng-container *ngIf="canApprove(task)">
+                <i
+                  class="fa fa-check-circle fa-2x text-success"
+                  style="cursor: pointer"
+                  nz-tooltip="{{ '::Approve' | abpLocalization }}"
+                  (click)="approveTask(task.id); $event.stopPropagation()"
+                ></i>
+                <i
+                  class="fa fa-times-circle fa-2x text-danger"
+                  style="cursor: pointer"
+                  nz-tooltip="{{ '::Reject' | abpLocalization }}"
+                  nz-popconfirm
+                  nzPopconfirmTitle="{{ '::Confirm Reject Task?' | abpLocalization }}"
+                  (nzOnConfirm)="rejectTask(task.id)"
+                  (click)="$event.stopPropagation()"
+                ></i>
+              </ng-container>
+
+              <button
+                nz-button
+                nzType="text"
+                nzShape="circle"
+                (click)="editTask(task, $event); $event.stopPropagation();"
+              >
+                <i class="fa fa-pencil text-primary"></i>
+              </button>
+              <button
+                nz-button
+                nzType="text"
+                nzDanger
+                nzShape="circle"
+                nz-popconfirm
+                nzPopconfirmTitle="Xác nhận xóa?"
+                (nzOnConfirm)="deleteTask(task.id, $event)"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
   [(nzVisible)]="isModalOpen"
   [nzTitle]="isEditMode ? ('::EditTask' | abpLocalization) : ('::NewTask' | abpLocalization)"
   (nzOnCancel)="isModalOpen = false"
@@ -204,14 +421,17 @@
             <nz-form-label nzRequired>{{ '::Status' | abpLocalization }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="status">
-                <nz-option [nzValue]="0" nzLabel="{{ 'Form::New' | abpLocalization }}"></nz-option>
                 <nz-option
-                  [nzValue]="1"
-                  nzLabel="{{ 'Form::In Progress' | abpLocalization }}"
+                  [nzValue]="taskStatus.New"
+                  nzLabel="{{ '::Enum:TaskStatus.0' | abpLocalization }}"
                 ></nz-option>
                 <nz-option
-                  [nzValue]="2"
-                  nzLabel="{{ 'Form::Completed' | abpLocalization }}"
+                  [nzValue]="taskStatus.InProgress"
+                  nzLabel="{{ '::Enum:TaskStatus.1' | abpLocalization }}"
+                ></nz-option>
+                <nz-option
+                  [nzValue]="taskStatus.Completed"
+                  nzLabel="{{ '::Enum:TaskStatus.2' | abpLocalization }}"
                 ></nz-option>
               </nz-select>
             </nz-form-control>

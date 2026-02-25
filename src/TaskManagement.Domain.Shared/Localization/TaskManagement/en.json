@@ -32,6 +32,11 @@
     "AssignedTo": "Assigned To",
     "Description": "Description",
     "CreationTime": "Created At",
+    "All overdue tasks": "All",
+    "Incomplete overdue tasks": "Incomplete",
+    "Completed overdue tasks": "Completed",
+    "Pending Tasks_": "Pending",
+    
 
     "Enum:TaskStatus.0": "New",
     "Enum:TaskStatus.1": "In Progress",
