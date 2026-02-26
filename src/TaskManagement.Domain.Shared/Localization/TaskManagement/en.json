@@ -8,6 +8,7 @@
     "Menu:TaskManagement": "Task Management",
     "Menu:Tasks": "Tasks",
     "Menu:Projects": "Projects",
+    "Menu:Calendar": "Calendar",
 
     "Permission:TaskManagement": "Task Management",
     "Permission:Tasks": "Tasks Management",
@@ -36,7 +37,7 @@
     "Incomplete overdue tasks": "Incomplete",
     "Completed overdue tasks": "Completed",
     "Pending Tasks_": "Pending",
-    
+
 
     "Enum:TaskStatus.0": "New",
     "Enum:TaskStatus.1": "In Progress",

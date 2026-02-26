@@ -1,0 +1,17 @@
+/* Làm đẹp các khối sự kiện trên FullCalendar */
+::ng-deep .fc-event {
+  border-radius: 4px !important;
+  margin-bottom: 2px !important;
+  border: none !important;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+::ng-deep .fc-event:hover {
+  opacity: 0.8;
+}
+
+/* Ẩn bớt dấu chấm tròn mặc định của FullCalendar */
+::ng-deep .fc-daygrid-event-dot {
+  display: none !important;
+}

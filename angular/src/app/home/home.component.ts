@@ -1,20 +1,21 @@
 import { Component, inject } from '@angular/core';
-import { AuthService, LocalizationPipe } from '@abp/ng.core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { ConfigStateService, CurrentUserDto } from '@abp/ng.core';
 
 @Component({
   selector: 'app-home',
+  standalone: true,
+  // Đã thêm CommonModule và RouterModule để HTML không bị lỗi, đồng thời bỏ LocalizationPipe thừa
+  imports: [CommonModule, RouterModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  imports: [LocalizationPipe]
 })
 export class HomeComponent {
-  private authService = inject(AuthService);
+  private configState = inject(ConfigStateService);
 
-  get hasLoggedIn(): boolean {
-    return this.authService.isAuthenticated
-  }
-
-  login() {
-    this.authService.navigateToLogin();
+  // Khai báo Getter lấy dữ liệu User trực tiếp từ hệ thống lõi của ABP
+  get currentUser(): CurrentUserDto {
+    return this.configState.getOne('currentUser');
   }
 }

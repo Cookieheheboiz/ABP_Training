@@ -873,6 +873,102 @@
       "rootPath": "app",
       "remoteServiceName": "Default",
       "controllers": {
+        "TaskManagement.Calendars.CalendarAppService": {
+          "controllerName": "Calendar",
+          "controllerGroupName": "Calendar",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "TaskManagement.Calendars.CalendarAppService",
+          "interfaces": [
+            {
+              "type": "TaskManagement.Calendars.ICalendarAppService",
+              "name": "ICalendarAppService",
+              "methods": [
+                {
+                  "name": "GetCalendarTasksAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "TaskManagement.Calendars.GetCalendarTasksInput, TaskManagement.Application.Contracts",
+                      "type": "TaskManagement.Calendars.GetCalendarTasksInput",
+                      "typeSimple": "TaskManagement.Calendars.GetCalendarTasksInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<TaskManagement.Calendars.CalendarTaskDto>",
+                    "typeSimple": "[TaskManagement.Calendars.CalendarTaskDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetCalendarTasksAsyncByInput": {
+              "uniqueName": "GetCalendarTasksAsyncByInput",
+              "name": "GetCalendarTasksAsync",
+              "httpMethod": "GET",
+              "url": "api/app/calendar/calendar-tasks",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "TaskManagement.Calendars.GetCalendarTasksInput, TaskManagement.Application.Contracts",
+                  "type": "TaskManagement.Calendars.GetCalendarTasksInput",
+                  "typeSimple": "TaskManagement.Calendars.GetCalendarTasksInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "ProjectId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "StartDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "EndDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<TaskManagement.Calendars.CalendarTaskDto>",
+                "typeSimple": "[TaskManagement.Calendars.CalendarTaskDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "TaskManagement.Calendars.ICalendarAppService"
+            }
+          }
+        },
         "TaskManagement.Projects.ProjectAppService": {
           "controllerName": "Project",
           "controllerGroupName": "Project",
@@ -4549,6 +4645,154 @@
           "jsonName": null,
           "type": "T",
           "typeSimple": "T",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
+    "TaskManagement.Calendars.CalendarTaskDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "DueDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "TaskManagement.Tasks.TaskStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "IsApproved",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "ProjectId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "ProjectName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
+    "TaskManagement.Calendars.GetCalendarTasksInput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "ProjectId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

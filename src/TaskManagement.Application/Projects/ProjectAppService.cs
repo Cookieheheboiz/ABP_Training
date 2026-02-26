@@ -155,6 +155,7 @@ namespace TaskManagement.Projects
             if (!CurrentUser.IsInRole("admin"))
             {
                 queryable = queryable.Where(x =>
+                    x.CreatorId == currentUserId ||
                     x.ManagerId == currentUserId ||
                     x.Members.Any(m => m.UserId == currentUserId));
             }

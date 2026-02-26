@@ -1,0 +1,138 @@
+<div class="container-fluid py-4">
+  <div class="d-flex align-items-center mb-4">
+    <h2 class="mb-0 fw-bold">
+      <i class="fa fa-calendar-alt me-2 text-primary"></i>Lịch trình công việc
+    </h2>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <full-calendar [options]="calendarOptions"></full-calendar>
+    </div>
+  </div>
+</div>
+
+<nz-modal
+  [(nzVisible)]="isTaskModalVisible"
+  [nzTitle]="modalTitle"
+  [nzFooter]="null"
+  (nzOnCancel)="isTaskModalVisible = false"
+  nzWidth="650px"
+>
+  <ng-template #modalTitle>
+    <div class="d-flex align-items-center fw-bold fs-5">
+      <i class="fa fa-tasks me-2 text-primary"></i> Chi tiết công việc
+    </div>
+  </ng-template>
+
+  <ng-container *nzModalContent>
+    <div *ngIf="selectedTask">
+      <div class="mb-4">
+        <h3 class="fw-bold text-dark mb-3" style="font-size: 1.4rem; line-height: 1.4">
+          {{ selectedTask.title }}
+        </h3>
+        <nz-tag
+          nzColor="blue"
+          nzTheme="outline"
+          *ngIf="selectedTask.projectName"
+          class="rounded-pill px-3 py-1 fs-6"
+        >
+          <i class="fa fa-folder-open me-1"></i> {{ selectedTask.projectName }}
+        </nz-tag>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div
+            class="d-flex align-items-center p-3 border rounded shadow-sm"
+            style="background-color: #ffffff"
+          >
+            <div class="me-3">
+              <div
+                class="d-flex align-items-center justify-content-center rounded-circle bg-light text-primary"
+                style="width: 40px; height: 40px"
+              >
+                <i class="fa fa-spinner fs-5"></i>
+              </div>
+            </div>
+            <div>
+              <small class="text-muted d-block fw-bold mb-1">Trạng thái</small>
+              <nz-tag
+                [nzColor]="getStatusColor(selectedTask.status)"
+                class="m-0 border-0 shadow-sm"
+              >
+                {{ getStatusText(selectedTask.status) }}
+              </nz-tag>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div
+            class="d-flex align-items-center p-3 border rounded shadow-sm"
+            style="background-color: #ffffff"
+          >
+            <div class="me-3">
+              <div
+                class="d-flex align-items-center justify-content-center rounded-circle bg-light"
+                [ngClass]="(selectedTask.dueDate && (selectedTask.dueDate | date:'yyyyMMddHHmm') < (today | date:'yyyyMMddHHmm') && selectedTask.status !== 2) ? 'text-danger' : 'text-success'"
+                style="width: 40px; height: 40px"
+              >
+                <i class="fa fa-clock fs-5"></i>
+              </div>
+            </div>
+            <div>
+              <small class="text-muted d-block fw-bold mb-1">Hạn chót</small>
+              <span
+                class="fw-bold"
+                style="font-size: 0.95rem"
+                [class.text-danger]="selectedTask.dueDate && (selectedTask.dueDate | date:'yyyyMMddHHmm') < (today | date:'yyyyMMddHHmm') && selectedTask.status !== 2"
+              >
+                {{ selectedTask.dueDate ? (selectedTask.dueDate | date:'dd/MM/yyyy HH:mm') : 'Không
+                có' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h6 class="fw-bold text-dark mb-2">
+          <i class="fa fa-align-left me-2 text-muted"></i> Mô tả chi tiết
+        </h6>
+        <div
+          class="p-3 rounded"
+          style="background-color: #f8f9fa; border-left: 4px solid #1890ff; color: #212529"
+        >
+          <span *ngIf="selectedTask.description" style="white-space: pre-wrap; font-size: 0.95rem"
+            >{{ selectedTask.description }}</span
+          >
+          <span *ngIf="!selectedTask.description" class="text-muted fst-italic"
+            >Không có mô tả chi tiết cho công việc này.</span
+          >
+        </div>
+      </div>
+
+      <div *ngIf="selectedTask.assignedUserNames?.length">
+        <h6 class="fw-bold text-dark mb-2">
+          <i class="fa fa-users me-2 text-muted"></i> Người thực hiện
+        </h6>
+        <div class="d-flex gap-2 flex-wrap">
+          <nz-tag
+            *ngFor="let name of selectedTask.assignedUserNames"
+            class="rounded-pill d-flex align-items-center py-1 pe-3 ps-1 border"
+            style="background: #ffffff; font-size: 0.9rem"
+          >
+            <div
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+              style="width: 24px; height: 24px; font-size: 11px"
+            >
+              {{ name.charAt(0) | uppercase }}
+            </div>
+            {{ name }}
+          </nz-tag>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

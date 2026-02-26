@@ -163,6 +163,7 @@ namespace TaskManagement.Tasks
                     var isDuplicate = await Repository.AnyAsync(x => 
                         x.ProjectId == input.ProjectId &&
                         x.Title == input.Title &&
+                        x.Id != id &&
                         x.Description == input.Description &&
     
                         x.DueDate.HasValue == input.DueDate.HasValue &&
@@ -240,6 +241,7 @@ namespace TaskManagement.Tasks
             {
                 var currentUserId = CurrentUser.Id;
                 queryable = queryable.Where(x =>
+                    x.Project.CreatorId == currentUserId ||
                     x.Project.ManagerId == currentUserId ||                       // Là PM của dự án
                     x.Project.Members.Any(m => m.UserId == currentUserId) ||      // Là thành viên dự án
                     x.Assignees.Any(a => a.UserId == currentUserId) ||            // Được giao Task này

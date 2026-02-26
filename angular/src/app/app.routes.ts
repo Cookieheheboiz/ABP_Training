@@ -40,4 +40,8 @@ export const APP_ROUTES: Routes = [
       requiredPolicy: 'TaskManagement.Projects',
     },
   },
+  {
+    path: 'calendars',
+    loadChildren: () => import('./calendars/calendars-module').then(m => m.CalendarsModule),
+  },
 ];
