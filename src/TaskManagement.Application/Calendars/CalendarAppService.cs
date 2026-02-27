@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TaskManagement.Permissions;
 using TaskManagement.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -12,6 +14,7 @@ using Volo.Abp.Users;
 
 namespace TaskManagement.Calendars
 {
+    [Authorize(TaskManagementPermissions.Calendars.Default)]
     public class CalendarAppService : ApplicationService, ICalendarAppService
     {
         private readonly IRepository<TaskItem, Guid> _taskRepository;

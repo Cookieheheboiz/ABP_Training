@@ -5,12 +5,10 @@
   >
     <div class="container-fluid py-3">
       <h1 class="display-5 fw-bold mb-3 text-white">
-        Xin chào, {{ currentUser?.userName || 'bạn' }}! 👋
+        {{ '::Home:Hello' | abpLocalization }}, {{ currentUser?.userName || 'bạn' }}! 👋
       </h1>
       <p class="fs-5 mb-0" style="opacity: 0.9; max-width: 800px">
-        Chào mừng bạn đến với hệ thống Quản lý công việc. Tại đây, bạn có thể dễ dàng theo dõi tiến
-        độ, sắp xếp thời gian và cộng tác hiệu quả cùng các thành viên trong dự án. Hãy chọn một tác
-        vụ bên dưới để bắt đầu ngày làm việc của bạn nhé!
+        {{ '::Home:WelcomeMessage' | abpLocalization }}
       </p>
     </div>
   </div>
@@ -25,13 +23,12 @@
           >
             <i class="fa fa-tasks" style="font-size: 2rem"></i>
           </div>
-          <h4 class="fw-bold mb-3">Xem danh sách công việc</h4>
+          <h4 class="fw-bold mb-3">{{ '::Home:TaskList' | abpLocalization }}</h4>
           <p class="text-muted mb-4">
-            Quản lý, cập nhật trạng thái và theo dõi chi tiết tiến độ các công việc được giao trong
-            dự án của bạn.
+            {{ '::Home:TaskListDescription' | abpLocalization }}
           </p>
           <a routerLink="/tasks" class="btn btn-primary px-4 py-2 rounded-pill fw-medium">
-            <i class="fa fa-list me-2"></i> Đến trang Công việc
+            <i class="fa fa-list me-2"></i> {{ '::Home:ViewTasks' | abpLocalization }}
           </a>
         </div>
       </div>
@@ -46,16 +43,15 @@
           >
             <i class="fa fa-calendar-alt" style="font-size: 2rem"></i>
           </div>
-          <h4 class="fw-bold mb-3">Lịch trình của tôi</h4>
+          <h4 class="fw-bold mb-3">{{ '::Home:MySchedule' | abpLocalization }}</h4>
           <p class="text-muted mb-4">
-            Xem tổng quan lịch làm việc, các mốc thời gian và hạn chót trong tháng một cách trực
-            quan nhất.
+            {{ '::Home:MyScheduleDescription' | abpLocalization }}
           </p>
           <a
             routerLink="/calendars"
             class="btn btn-outline-primary px-4 py-2 rounded-pill fw-medium"
           >
-            <i class="fa fa-calendar me-2"></i> Mở Lịch trình
+            <i class="fa fa-calendar me-2"></i> {{ '::Home:OpenCalendar' | abpLocalization }}
           </a>
         </div>
       </div>

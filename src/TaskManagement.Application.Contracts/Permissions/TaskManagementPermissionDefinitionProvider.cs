@@ -20,6 +20,8 @@ public class TaskManagementPermissionDefinitionProvider : PermissionDefinitionPr
         projectsPermission.AddChild(TaskManagementPermissions.Projects.Create, L("Permission:Projects.Create"));
         projectsPermission.AddChild(TaskManagementPermissions.Projects.Update, L("Permission:Projects.Update"));
         projectsPermission.AddChild(TaskManagementPermissions.Projects.Delete, L("Permission:Projects.Delete"));
+
+        myGroup.AddPermission(TaskManagementPermissions.Calendars.Default, L("Permission:Calendars"));
     }
 
     private static LocalizableString L(string name)

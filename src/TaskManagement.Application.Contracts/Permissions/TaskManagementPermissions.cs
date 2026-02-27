@@ -19,4 +19,9 @@ public static class TaskManagementPermissions
         public const string Update = Default + ".Update";
         public const string Delete = Default + ".Delete";
     }
+
+    public static class Calendars
+    {
+        public const string Default = GroupName + ".Calendars";
+    }
 }

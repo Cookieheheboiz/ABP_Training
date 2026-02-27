@@ -8,6 +8,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 // Import service từ proxy calendars mới tạo
 import { CalendarService } from '@proxy/calendars';
 import { TaskStatus } from '@proxy/tasks';
+import { LocalizationService } from '@abp/ng.core';
 
 @Component({
   selector: 'app-list',
@@ -23,6 +24,7 @@ export class List {
   private calendarService = inject(CalendarService);
   private zone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
+  private localization = inject(LocalizationService);
   today = new Date();
 
   calendarOptions: CalendarOptions = {
@@ -34,16 +36,23 @@ export class List {
       right: 'dayGridMonth,timeGridWeek,listWeek',
     },
     buttonText: {
-      today: 'Hôm nay',
-      month: 'Tháng',
-      week: 'Tuần',
-      list: 'Danh sách',
+      today: this.localization.instant('::Calendar:Today'),
+      month: this.localization.instant('::Calendar:Month'),
+      week: this.localization.instant('::Calendar:Week'),
+      list: this.localization.instant('::Calendar:List'),
+    },
+    buttonHints: {
+      today: this.localization.instant('::Calendar:Hint:Today'),
+      prev: this.localization.instant('::Calendar:Hint:Prev'),
+      next: this.localization.instant('::Calendar:Hint:Next'),
+      dayGridMonth: this.localization.instant('::Calendar:Hint:MonthView'),
+      timeGridWeek: this.localization.instant('::Calendar:Hint:WeekView'),
+      listWeek: this.localization.instant('::Calendar:Hint:ListView'),
     },
 
-    dayMaxEvents: 3, // Giới hạn tối đa 3 task trên 1 ô ngày
+    dayMaxEvents: 3,
     moreLinkContent: args => {
-      // Việt hóa nút "+X more" mặc định của tiếng Anh
-      return `+${args.num} công việc nữa`;
+      return `+${args.num} ${this.localization.instant('::Calendar:MoreTasks')}`;
     },
     moreLinkClick: 'popover',
     defaultTimedEventDuration: '01:00:00', // Ép mọi task có DueDate đều dài đúng 1 tiếng trên giao diện
@@ -53,7 +62,6 @@ export class List {
     slotMaxTime: '23:00:00',
 
     eventDisplay: 'block',
-    // Tự động gọi API mỗi khi người dùng chuyển tháng/tuần
     eventMouseEnter: info => {
       info.el.setAttribute('title', info.event.title);
       info.el.style.cursor = 'pointer';
@@ -66,10 +74,6 @@ export class List {
     // 2. HIỆU ỨNG CLICK: Mở Modal chi tiết
     eventClick: info => {
       this.zone.run(() => {
-        // In thử data ra F12 để Huy yên tâm là FullCalendar có truyền dữ liệu
-        console.log('Dữ liệu Task vừa click:', info.event.extendedProps);
-
-        // Gán trực tiếp data và mở Modal
         this.selectedTask = info.event.extendedProps;
         this.isTaskModalVisible = true;
       });
@@ -85,7 +89,6 @@ export class List {
         ? `<i class="fa fa-exclamation-circle text-danger me-1 bg-white rounded-circle" style="padding: 1px;"></i>`
         : '';
 
-      // Nếu đang ở màn hình Danh sách (List View)
       if (arg.view.type === 'listWeek') {
         return {
           html: `<div style="font-weight: 500; color: #212529;">
@@ -94,7 +97,6 @@ export class List {
         };
       }
 
-      // Nếu ở màn hình Tháng/Tuần (Grid View - nền màu đậm)
       return {
         html: `
           <div class="px-1 text-truncate text-white" style="font-size: 12px; font-weight: 500;">
@@ -148,13 +150,13 @@ export class List {
   getStatusText(status: TaskStatus): string {
     switch (status) {
       case TaskStatus.New:
-        return 'Mới tạo';
+        return this.localization.instant('::TaskStatus:New');
       case TaskStatus.InProgress:
-        return 'Đang thực hiện';
+        return this.localization.instant('::TaskStatus:InProgress');
       case TaskStatus.Completed:
-        return 'Đã hoàn thành';
+        return this.localization.instant('::TaskStatus:Completed');
       default:
-        return 'Không xác định';
+        return this.localization.instant('::TaskStatus:Unknown');
     }
   }
 }

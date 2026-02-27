@@ -1,7 +1,8 @@
 <div class="container-fluid py-4">
   <div class="d-flex align-items-center mb-4">
     <h2 class="mb-0 fw-bold">
-      <i class="fa fa-calendar-alt me-2 text-primary"></i>Lịch trình công việc
+      <i class="fa fa-calendar-alt me-2 text-primary"></i>
+      {{ '::Calendar:Calendar' | abpLocalization }}
     </h2>
   </div>
 
@@ -21,7 +22,7 @@
 >
   <ng-template #modalTitle>
     <div class="d-flex align-items-center fw-bold fs-5">
-      <i class="fa fa-tasks me-2 text-primary"></i> Chi tiết công việc
+      <i class="fa fa-tasks me-2 text-primary"></i> {{ '::Calendar:TaskDetails' | abpLocalization }}
     </div>
   </ng-template>
 
@@ -56,7 +57,9 @@
               </div>
             </div>
             <div>
-              <small class="text-muted d-block fw-bold mb-1">Trạng thái</small>
+              <small class="text-muted d-block fw-bold mb-1"
+                >{{ '::Calendar:Status' | abpLocalization }}</small
+              >
               <nz-tag
                 [nzColor]="getStatusColor(selectedTask.status)"
                 class="m-0 border-0 shadow-sm"
@@ -82,14 +85,16 @@
               </div>
             </div>
             <div>
-              <small class="text-muted d-block fw-bold mb-1">Hạn chót</small>
+              <small class="text-muted d-block fw-bold mb-1"
+                >{{ '::Calendar:DueDate' | abpLocalization }}</small
+              >
               <span
                 class="fw-bold"
                 style="font-size: 0.95rem"
                 [class.text-danger]="selectedTask.dueDate && (selectedTask.dueDate | date:'yyyyMMddHHmm') < (today | date:'yyyyMMddHHmm') && selectedTask.status !== 2"
               >
-                {{ selectedTask.dueDate ? (selectedTask.dueDate | date:'dd/MM/yyyy HH:mm') : 'Không
-                có' }}
+                {{ selectedTask.dueDate ? (selectedTask.dueDate | date:'dd/MM/yyyy HH:mm') :
+                '::Calendar:NoDueDate' | abpLocalization }}
               </span>
             </div>
           </div>
@@ -98,7 +103,8 @@
 
       <div class="mb-4">
         <h6 class="fw-bold text-dark mb-2">
-          <i class="fa fa-align-left me-2 text-muted"></i> Mô tả chi tiết
+          <i class="fa fa-align-left me-2 text-muted"></i> {{ '::Calendar:Description' |
+          abpLocalization }}
         </h6>
         <div
           class="p-3 rounded"
@@ -108,14 +114,15 @@
             >{{ selectedTask.description }}</span
           >
           <span *ngIf="!selectedTask.description" class="text-muted fst-italic"
-            >Không có mô tả chi tiết cho công việc này.</span
+            >{{ '::Calendar:NoDescription' | abpLocalization }}</span
           >
         </div>
       </div>
 
       <div *ngIf="selectedTask.assignedUserNames?.length">
         <h6 class="fw-bold text-dark mb-2">
-          <i class="fa fa-users me-2 text-muted"></i> Người thực hiện
+          <i class="fa fa-users me-2 text-muted"></i> {{ '::Calendar:AssignedUsers' |
+          abpLocalization }}
         </h6>
         <div class="d-flex gap-2 flex-wrap">
           <nz-tag

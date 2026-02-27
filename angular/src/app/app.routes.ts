@@ -43,5 +43,9 @@ export const APP_ROUTES: Routes = [
   {
     path: 'calendars',
     loadChildren: () => import('./calendars/calendars-module').then(m => m.CalendarsModule),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'TaskManagement.Calendars',
+    },
   },
 ];
