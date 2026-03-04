@@ -1,0 +1,114 @@
+<div class="dropdown" style="margin-right: 15px; position: relative">
+  <a
+    class="text-dark position-relative d-flex align-items-center"
+    href="javascript:void(0)"
+    role="button"
+    (click)="toggleDropdown($event)"
+    style="text-decoration: none; cursor: pointer; height: 100%"
+  >
+    <i class="fa fa-bell text-secondary" style="font-size: 1.3rem"></i>
+
+    <span
+      *ngIf="unreadCount > 0"
+      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm"
+      style="font-size: 0.65rem; padding: 0.3em 0.5em; transform: translate(-30%, -10%) !important"
+    >
+      {{ unreadCount > 99 ? '99+' : unreadCount }}
+    </span>
+  </a>
+
+  <ul
+    class="dropdown-menu dropdown-menu-end shadow border-0"
+    [class.show]="isOpen"
+    style="
+      width: 360px;
+      max-height: 450px;
+      overflow-y: auto;
+      padding: 0;
+      border-radius: 12px;
+      position: absolute;
+      right: 0;
+      top: 100%;
+    "
+  >
+    <li
+      class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light"
+      style="border-radius: 12px 12px 0 0"
+    >
+      <h6 class="mb-0 fw-bold"><i class="fa fa-inbox me-2 text-primary"></i>Thông báo của bạn</h6>
+      <a
+        *ngIf="unreadCount > 0"
+        href="javascript:void(0)"
+        (click)="markAllAsRead()"
+        class="text-primary text-decoration-none"
+        style="font-size: 0.85rem; font-weight: 500"
+      >
+        <i class="fa fa-check-double me-1"></i>Đã đọc tất cả
+      </a>
+    </li>
+
+    <ng-container *ngIf="notifications.length > 0; else noData">
+      <li *ngFor="let item of notifications" class="border-bottom">
+        <a
+          class="dropdown-item py-3 px-3 transition-all"
+          [ngClass]="{'bg-white': item.isRead, 'bg-primary bg-opacity-10': !item.isRead}"
+          href="javascript:void(0)"
+          (click)="onClickNotification(item)"
+          style="white-space: normal"
+        >
+          <div class="d-flex align-items-start">
+            <div
+              class="rounded-circle text-white d-flex align-items-center justify-content-center me-3 mt-1 shadow-sm"
+              [ngClass]="item.notificationType === 'Task' ? 'bg-primary' : 'bg-success'"
+              style="width: 38px; height: 38px; min-width: 38px"
+            >
+              <i
+                class="fa"
+                [ngClass]="item.notificationType === 'Task' ? 'fa-tasks' : 'fa-project-diagram'"
+              ></i>
+            </div>
+
+            <div class="flex-grow-1">
+              <h6
+                class="mb-1 fw-bold"
+                [ngClass]="{'text-dark': !item.isRead, 'text-muted': item.isRead}"
+                style="font-size: 0.95rem"
+              >
+                {{ item.title }}
+              </h6>
+              <p
+                class="mb-1"
+                [ngClass]="{'text-dark': !item.isRead, 'text-secondary': item.isRead}"
+                style="font-size: 0.85rem; line-height: 1.4"
+              >
+                {{ item.message }}
+              </p>
+              <small class="text-muted" style="font-size: 0.75rem">
+                <i class="fa fa-clock-o me-1"></i>{{ item.creationTime | date:'dd/MM/yyyy HH:mm' }}
+              </small>
+            </div>
+
+            <div
+              *ngIf="!item.isRead"
+              class="ms-2 mt-2 bg-primary rounded-circle"
+              style="width: 8px; height: 8px; min-width: 8px"
+            ></div>
+          </div>
+        </a>
+      </li>
+    </ng-container>
+
+    <ng-template #noData>
+      <li class="p-5 text-center text-muted bg-white">
+        <div
+          class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3"
+          style="width: 60px; height: 60px"
+        >
+          <i class="fa fa-bell-slash fs-3 text-secondary"></i>
+        </div>
+        <h6 class="fw-bold text-dark">Chưa có thông báo mới</h6>
+        <p class="mb-0 fs-7">Bạn đã xem hết tất cả thông báo.</p>
+      </li>
+    </ng-template>
+  </ul>
+</div>

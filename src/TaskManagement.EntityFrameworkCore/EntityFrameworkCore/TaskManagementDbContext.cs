@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using TaskManagement.Notifications;
+using TaskManagement.Projects;
 using TaskManagement.Tasks;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -15,8 +17,6 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-using TaskManagement.Tasks;
-using TaskManagement.Projects;
 
 namespace TaskManagement.EntityFrameworkCore;
 
@@ -66,6 +66,8 @@ public class TaskManagementDbContext :
     public DbSet<Project> Projects { get; set; }
 
     public DbSet<ProjectMember> ProjectMembers { get; set; }
+
+    public DbSet<AppNotification> Notifications { get; set; }
 
     public TaskManagementDbContext(DbContextOptions<TaskManagementDbContext> options)
         : base(options)
@@ -128,6 +130,13 @@ public class TaskManagementDbContext :
             b.ToTable(TaskManagementConsts.DbTablePrefix + "ProjectMembers", TaskManagementConsts.DbSchema);
             b.ConfigureByConvention();
             b.HasKey(x => new { x.ProjectId, x.UserId });
+        });
+
+        builder.Entity<AppNotification>(b =>
+        {
+            b.ToTable(TaskManagementConsts.DbTablePrefix + "Notifications", TaskManagementConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.HasIndex(x => x.ReceiverId);
         });
     }
 }

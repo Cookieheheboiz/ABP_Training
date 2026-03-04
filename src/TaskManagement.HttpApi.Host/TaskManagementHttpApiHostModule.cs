@@ -38,7 +38,10 @@ using Volo.Abp.Identity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.Studio.Client.AspNetCore;
+using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Security.Claims;
+using Volo.Abp.BackgroundWorkers;
+using TaskManagement.BackgroundWorkers;
 
 namespace TaskManagement;
 
@@ -121,6 +124,7 @@ public class TaskManagementHttpApiHostModule : AbpModule
         ConfigureSwagger(context, configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
+        context.Services.AddSignalR();
     }
 
     private void ConfigureStudio(IHostEnvironment hostingEnvironment)
@@ -272,6 +276,8 @@ public class TaskManagementHttpApiHostModule : AbpModule
         app.UseAuthentication();
         app.UseAbpOpenIddictValidation();
 
+        context.AddBackgroundWorkerAsync<TaskDeadlineWorker>();
+
         if (MultiTenancyConsts.IsEnabled)
         {
             app.UseMultiTenancy();
@@ -292,6 +298,9 @@ public class TaskManagementHttpApiHostModule : AbpModule
         });
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
-        app.UseConfiguredEndpoints();
+        app.UseConfiguredEndpoints(endpoints =>
+        {
+            endpoints.MapHub<TaskManagement.Hubs.NotificationHub>("/signalr-hubs/notification");
+        });
     }
 }

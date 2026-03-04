@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TaskManagement.Notifications;
 using TaskManagement.Permissions;
 using TaskManagement.Projects;
 using TaskManagement.Services.Base;
@@ -13,8 +15,10 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.EventBus.Local;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
+using static TaskManagement.Permissions.TaskManagementPermissions;
 
 
 namespace TaskManagement.Tasks
@@ -31,12 +35,19 @@ namespace TaskManagement.Tasks
         private readonly IIdentityUserRepository _userRepository;
         private readonly ITaskItemRepository _taskItemRepository;
         private readonly IRepository<Project, Guid> _projectRepository;
-        public TaskAppService(ITaskItemRepository repository, IIdentityUserRepository userRepository, IRepository<Project, Guid> projectRepository)
+        private readonly IRepository<AppNotification, Guid> _notificationRepository;
+        private readonly IdentityUserManager _userManager;
+        private readonly ILocalEventBus _localEventBus; 
+        public TaskAppService(ITaskItemRepository repository, IIdentityUserRepository userRepository, IRepository<Project, Guid> projectRepository, IRepository<AppNotification, Guid> notificationRepository, IdentityUserManager userManager, ILocalEventBus localEventBus
+            )
              : base(repository)
         {
             _userRepository = userRepository;
             _taskItemRepository = repository;
             _projectRepository = projectRepository;
+            _notificationRepository = notificationRepository;
+            _userManager = userManager;
+            _localEventBus = localEventBus;
 
             GetPolicyName = "TaskManagement.Tasks";
             GetListPolicyName = "TaskManagement.Tasks";
@@ -102,6 +113,10 @@ namespace TaskManagement.Tasks
             }
 
             await Repository.InsertAsync(task, autoSave: true);
+            var timeStr = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+            var msg = $"Công việc '{task.Title}' đã được tạo mới vào lúc {timeStr}.";
+            await SendTaskNotificationAsync(input.AssignedUserIds?.ToList(), "Task mới", msg, task.ProjectId);
+
             return ObjectMapper.Map<TaskItem, TaskDto>(task);
         }
 
@@ -181,6 +196,32 @@ namespace TaskManagement.Tasks
                         throw new UserFriendlyException(L["DuplicateTaskError"]);
                     }
 
+                    var changes = new List<string>();
+
+                    if (task.Title != input.Title) changes.Add($"Tên công việc thành '{input.Title}'");
+                    if (task.Status != input.Status) changes.Add("Trạng thái");
+                    if (task.DueDate != input.DueDate) changes.Add("Hạn chót");
+                    if (task.Description != input.Description) changes.Add("Mô tả");
+
+                    // Kiểm tra xem danh sách Assignee có bị thay đổi không
+                    var oldAssignees = task.Assignees.Select(a => a.UserId).OrderBy(id => id).ToList();
+                    var newAssignees = input.AssignedUserIds?.OrderBy(id => id).ToList() ?? new List<Guid>();
+                    if (!oldAssignees.SequenceEqual(newAssignees))
+                    {
+                        changes.Add("Người thực hiện");
+                    }
+
+                    // Nếu có bất kỳ sự thay đổi nào thì rải thông báo
+                    if (changes.Any())
+                    {
+                        var timeStr = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                        var msg = $"Công việc '{task.Title}' đã chỉnh sửa: {string.Join(", ", changes)} vào lúc {timeStr}.";
+
+                        // Gộp cả người cũ và người mới để ai cũng biết task bị đổi
+                        var allInvolvedUsers = oldAssignees.Union(newAssignees).ToList();
+                        await SendTaskNotificationAsync(allInvolvedUsers, "Cập nhật Task", msg, task.ProjectId);
+                    }
+
                     task.Title = input.Title;
                     task.Description = input.Description;
                     task.Status = input.Status;
@@ -209,6 +250,7 @@ namespace TaskManagement.Tasks
             await CheckPolicyAsync(DeletePolicyName);
 
             var task = await Repository.GetAsync(id);
+            var oldAssignees = task.Assignees.Select(a => a.UserId).ToList();
             var project = await _projectRepository.GetAsync(task.ProjectId);
 
             var currentUserId = CurrentUser.Id;
@@ -222,6 +264,9 @@ namespace TaskManagement.Tasks
             }
 
             await _taskItemRepository.DeleteTaskAsync(id);
+            var timeStr = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+            var msg = $"Công việc '{task.Title}' đã bị xóa vào lúc {timeStr}.";
+            await SendTaskNotificationAsync(oldAssignees, "Xóa Task", msg, task.ProjectId);
         }
         public override async Task<PagedResultDto<TaskDto>> GetListAsync(GetTasksInput input)
         {
@@ -357,6 +402,46 @@ namespace TaskManagement.Tasks
             {
                 throw new UserFriendlyException(L["Only Project Managers or Admins have the authority to approve!"]);
             }
+        }
+
+        private async Task SendTaskNotificationAsync(List<Guid> assignedUserIds, string title, string message, Guid projectId)
+        {
+            var targetUrl = $"/projects/{projectId}"; // Đường dẫn trỏ tới trang Tasks (hoặc modal chi tiết nếu bạn có route riêng)
+            var receivers = new HashSet<Guid>();
+
+            // 1. Thêm những người được giao task vào danh sách nhận
+            if (assignedUserIds != null)
+            {
+                foreach (var userId in assignedUserIds) receivers.Add(userId);
+            }
+
+            // 2. Tìm và thêm toàn bộ Admin vào danh sách nhận
+            var admins = await _userManager.GetUsersInRoleAsync("admin");
+            foreach (var admin in admins) receivers.Add(admin.Id);
+
+            // 3. Loại bỏ ID của chính người đang thao tác (để họ không tự nhận thông báo của mình)
+            receivers.Remove(CurrentUser.Id.GetValueOrDefault());
+
+            // 4. Tạo list thông báo và lưu vào DB
+            var notifications = receivers.Select(userId =>
+                new AppNotification(GuidGenerator.Create(), userId, title, message, targetUrl, "Task")
+            ).ToList();
+
+            if (notifications.Any())
+            {
+                await _notificationRepository.InsertManyAsync(notifications, autoSave: true);
+
+                foreach (var userId in receivers)
+                {
+                    await _localEventBus.PublishAsync(new NotificationEventData
+                    {
+                        ReceiverId = userId,
+                        Title = title,
+                        Message = message
+                    });
+                }
+            }
+
         }
     }
 }

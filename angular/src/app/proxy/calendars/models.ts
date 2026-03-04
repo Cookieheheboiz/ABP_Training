@@ -8,6 +8,8 @@ export interface CalendarTaskDto {
   isApproved?: boolean;
   projectId?: string;
   projectName?: string;
+  description?: string | null;
+  assignedUserNames?: string[];
 }
 
 export interface GetCalendarTasksInput {

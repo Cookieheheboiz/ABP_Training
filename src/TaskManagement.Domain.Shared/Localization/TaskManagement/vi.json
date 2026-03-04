@@ -58,6 +58,11 @@
     "Permission:Projects.Update": "Cập nhật dự án",
     "Permission:Calendars": "Quản lý lịch trình",
 
+    "TaskOverdueTitle": "Task quá hạn",
+    "TaskNearDeadlineTitle": "Task sắp hết hạn",
+    "TaskOverdueMessage": "Công việc '{0}' đã QUÁ HẠN vào lúc {1}.",
+    "TaskNearDeadlineMessage": "Công việc '{0}' sẽ HẾT HẠN trong vòng 24h tới ({1}).",
+
     "Task": "Công việc",
     "Status": "Trạng thái",
     "AssignedTo": "Người thực hiện",

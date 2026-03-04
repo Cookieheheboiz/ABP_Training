@@ -43,8 +43,10 @@
     "TaskStatus:Completed": "Completed",
     "TaskStatus:Unknown": "Unknown",
 
-
-
+    "TaskOverdueTitle": "Task Overdue",
+    "TaskNearDeadlineTitle": "Task Near Deadline",
+    "TaskOverdueMessage": "Task '{0}' became OVERDUE at {1}.",
+    "TaskNearDeadlineMessage": "Task '{0}' will EXPIRE within the next 24h ({1}).",
 
     "Permission:TaskManagement": "Task Management",
     "Permission:Tasks": "Tasks Management",
