@@ -17,11 +17,11 @@ import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signal
 import { EnvironmentService } from '@abp/ng.core';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { ToasterService } from '@abp/ng.theme.shared';
-
+import { CoreModule } from '@abp/ng.core';
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CoreModule],
   templateUrl: './list.html', // Chú ý: Đuôi file html của bạn là .html hay .component.html thì giữ nguyên nhé
   styleUrls: ['./list.scss'],
 })
@@ -75,15 +75,13 @@ export class ListComponent implements OnInit, OnDestroy {
         this.loadNotifications();
         this.toaster.info(message, title);
 
-        // 3. 👇 Ép giao diện nảy số chuông ngay khi SignalR nhận tin nhắn
         this.cdr.detectChanges();
       });
     });
 
-    this.hubConnection
-      .start()
-      .then(() => console.log('🟢 Đã kết nối SignalR thành công!'))
-      .catch(err => console.error('🔴 Lỗi kết nối SignalR:', err));
+    this.hubConnection.start();
+    // .then(() => console.log('🟢 Đã kết nối SignalR thành công!'))
+    // .catch(err => console.error('🔴 Lỗi kết nối SignalR:', err));
   }
 
   ngOnDestroy() {

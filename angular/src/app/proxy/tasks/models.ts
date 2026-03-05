@@ -6,8 +6,8 @@ export interface CreateUpdateTaskDto {
   description?: string | null;
   status: TaskStatus;
   isApproved?: boolean;
-  dueDate?: string | null;
-  assignedUserIds?: string[];
+  dueDate: string | null;
+  assignedUserIds?: string[] | null;
   projectId: string;
 }
 

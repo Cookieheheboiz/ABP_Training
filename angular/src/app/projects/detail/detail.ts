@@ -6,12 +6,13 @@ import { TaskService, TaskDto, TaskStatus, UserLookupDto } from '@proxy/tasks';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { Confirmation, ConfirmationService } from '@abp/ng.theme.shared';
+import { LocalizationService } from '@abp/ng.core';
 
 @Component({
   selector: 'app-detail',
   templateUrl: './detail.html',
   styleUrls: ['./detail.scss'],
-  providers: [ListService], // Giúp quản lý phân trang/sắp xếp bảng task
+  providers: [ListService],
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone: false,
 })
@@ -42,6 +43,7 @@ export class DetailComponent implements OnInit {
   private message = inject(NzMessageService);
   private confirmation = inject(ConfirmationService);
   private config = inject(ConfigStateService);
+  private localizationService = inject(LocalizationService);
 
   isOverdueModalVisible = false;
   isPendingModalVisible = false;
@@ -270,7 +272,7 @@ export class DetailComponent implements OnInit {
       title: ['', [Validators.required, Validators.maxLength(256)]],
       description: [null],
       status: [TaskStatus.New, Validators.required],
-      dueDate: [null],
+      dueDate: [null, [Validators.required]],
       assignedUserIds: [[]],
       projectId: [this.projectId],
     });
@@ -279,8 +281,9 @@ export class DetailComponent implements OnInit {
   // --- ACTIONS ---
   approveTask(id: string) {
     this.taskService.approveTask(id).subscribe(() => {
-      this.message.success('Đã phê duyệt công việc!');
-      this.list.get(); // Refresh bảng
+      const translatedMessage = this.localizationService.instant('::AcceptTaskSuccess');
+      this.message.success(translatedMessage);
+      this.list.get();
     });
   }
 
@@ -348,13 +351,16 @@ export class DetailComponent implements OnInit {
   rejectTask(id: string) {
     // Tái sử dụng API xóa task
     this.taskService.delete(id).subscribe(() => {
-      this.message.success('Đã từ chối và xóa công việc!');
+      const translatedMessage = this.localizationService.instant('::RejectTaskSuccess');
+
+      this.message.success(translatedMessage);
       this.list.get();
     });
   }
-
   deleteTask(id: string) {
-    this.confirmation.warn('::AreYouSureToDelete', '::ConfirmDelete').subscribe(status => {
+    const translatedMessage = this.localizationService.instant('::ConfirmDelete');
+    const translatedTitle = this.localizationService.instant('::AreYouSureToDelete');
+    this.confirmation.warn(translatedTitle, translatedMessage).subscribe(status => {
       if (status === Confirmation.Status.confirm) {
         this.taskService.delete(id).subscribe(() => this.list.get());
       }

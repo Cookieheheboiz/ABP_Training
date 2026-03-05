@@ -5281,7 +5281,7 @@
           "jsonName": null,
           "type": "System.DateTime?",
           "typeSimple": "string?",
-          "isRequired": false,
+          "isRequired": true,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -5300,7 +5300,7 @@
           "minimum": null,
           "maximum": null,
           "regex": null,
-          "isNullable": false
+          "isNullable": true
         },
         {
           "name": "ProjectId",

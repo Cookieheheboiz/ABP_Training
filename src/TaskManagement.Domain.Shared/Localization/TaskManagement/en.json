@@ -47,6 +47,8 @@
     "TaskNearDeadlineTitle": "Task Near Deadline",
     "TaskOverdueMessage": "Task '{0}' became OVERDUE at {1}.",
     "TaskNearDeadlineMessage": "Task '{0}' will EXPIRE within the next 24h ({1}).",
+    "ConfirmDelete": "Confirm Delete?",
+    "AreYouSureToDelete": "Are you sure to delete?",
 
     "Permission:TaskManagement": "Task Management",
     "Permission:Tasks": "Tasks Management",
@@ -81,6 +83,13 @@
     "Completed overdue tasks": "Completed",
     "Pending Tasks_": "Pending",
 
+    "RejectTaskSuccess": "The task has been rejected and deleted!",
+    "AcceptTaskSuccess": "The job has been approved!",
+
+    "Notification:NoNotifications": "No new notifications yet.",
+    "Notification:ReadAllNotifications": "You have viewed all notifications.",
+    "Notification:MarkAllAsRead": "Mark All As Read",
+    "Notification:Notifications": "My Notifications",
 
     "Enum:TaskStatus.0": "New",
     "Enum:TaskStatus.1": "In Progress",

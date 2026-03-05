@@ -136,7 +136,7 @@
               </div>
 
               <div
-                class="d-flex align-items-center text-muted small bg-light px-2 py-1 rounded-pill"
+                class="d-flex align-items-center text-muted small px-2 py-1 rounded-pill"
                 [nz-tooltip]="(project.memberIds?.length || 0) + ' ' + ('::Members' | abpLocalization)"
               >
                 <i class="fa fa-users me-1 text-primary"></i>
@@ -161,7 +161,7 @@
     <form nz-form [formGroup]="form" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ '::Project Name' | abpLocalization }}</nz-form-label>
-        <nz-form-control nzErrorTip="{{ '::Please enter project name' | abpLocalization }}">
+        <nz-form-control nzErrorTip="{{ '' | abpLocalization }}">
           <input
             nz-input
             formControlName="name"

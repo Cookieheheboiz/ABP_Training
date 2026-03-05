@@ -18,8 +18,9 @@ namespace TaskManagement.Tasks
         public TaskStatus Status { get; set; } = TaskStatus.New;
         public bool IsApproved { get; set; } = false;
 
+        [Required]
         public DateTime? DueDate { get; set; }
-        public List<Guid> AssignedUserIds { get; set; } = new List<Guid>();
+        public List<Guid>? AssignedUserIds { get; set; } = new List<Guid>();
 
         [Required]
         public Guid ProjectId { get; set; }

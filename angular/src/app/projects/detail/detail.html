@@ -389,6 +389,7 @@
   [nzTitle]="isEditMode ? ('::EditTask' | abpLocalization) : ('::NewTask' | abpLocalization)"
   (nzOnCancel)="isModalOpen = false"
   (nzOnOk)="save()"
+  [nzOkDisabled]="form.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="form" nzLayout="vertical">
@@ -440,7 +441,7 @@
 
         <div nz-col nzSpan="12">
           <nz-form-item>
-            <nz-form-label>{{ '::DueDate' | abpLocalization }}</nz-form-label>
+            <nz-form-label nzRequired>{{ '::DueDate' | abpLocalization }}</nz-form-label>
             <nz-form-control>
               <nz-date-picker
                 formControlName="dueDate"

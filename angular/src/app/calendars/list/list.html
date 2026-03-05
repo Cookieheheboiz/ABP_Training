@@ -50,7 +50,7 @@
           >
             <div class="me-3">
               <div
-                class="d-flex align-items-center justify-content-center rounded-circle bg-light text-primary"
+                class="d-flex align-items-center justify-content-center rounded-circle text-primary"
                 style="width: 40px; height: 40px"
               >
                 <i class="fa fa-spinner fs-5"></i>
@@ -77,7 +77,7 @@
           >
             <div class="me-3">
               <div
-                class="d-flex align-items-center justify-content-center rounded-circle bg-light"
+                class="d-flex align-items-center justify-content-center rounded-circle"
                 [ngClass]="(selectedTask.dueDate && (selectedTask.dueDate | date:'yyyyMMddHHmm') < (today | date:'yyyyMMddHHmm') && selectedTask.status !== 2) ? 'text-danger' : 'text-success'"
                 style="width: 40px; height: 40px"
               >

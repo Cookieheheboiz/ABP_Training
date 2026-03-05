@@ -32,18 +32,23 @@
     "
   >
     <li
-      class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light"
+      class="p-3 border-bottom d-flex justify-content-between align-items-center"
       style="border-radius: 12px 12px 0 0"
     >
-      <h6 class="mb-0 fw-bold"><i class="fa fa-inbox me-2 text-primary"></i>Thông báo của bạn</h6>
+      <h6 class="mb-0 fw-bold">
+        <i class="fa fa-inbox me-2 text-primary"></i>{{ '::Notification:Notifications' |
+        abpLocalization }}
+      </h6>
       <a
         *ngIf="unreadCount > 0"
         href="javascript:void(0)"
         (click)="markAllAsRead()"
-        class="text-primary text-decoration-none"
+        class="text-primary text-decoration-none d-flex align-items-center"
         style="font-size: 0.85rem; font-weight: 500"
       >
-        <i class="fa fa-check-double me-1"></i>Đã đọc tất cả
+        <i class="fa fa-check-double me-1"></i>
+
+        <span>{{ '::Notification:MarkAllAsRead' | abpLocalization }}</span>
       </a>
     </li>
 
@@ -101,13 +106,13 @@
     <ng-template #noData>
       <li class="p-5 text-center text-muted bg-white">
         <div
-          class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3"
+          class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
           style="width: 60px; height: 60px"
         >
           <i class="fa fa-bell-slash fs-3 text-secondary"></i>
         </div>
-        <h6 class="fw-bold text-dark">Chưa có thông báo mới</h6>
-        <p class="mb-0 fs-7">Bạn đã xem hết tất cả thông báo.</p>
+        <h6 class="fw-bold text-dark">{{ '::Notification:NoNotifications' | abpLocalization }}</h6>
+        <p class="mb-0 fs-7">{{ '::Notification:ReadAllNotifications' | abpLocalization }}</p>
       </li>
     </ng-template>
   </ul>

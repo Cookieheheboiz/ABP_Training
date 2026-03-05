@@ -18,6 +18,7 @@
     "Home:MySchedule": "Lịch trình của tôi",
     "Home:MyScheduleDescription": "Xem tổng quan lịch làm việc, các mốc thời gian và hạn chót trong tháng một cách trực quan nhất.",
     "Home:OpenCalendar": "Mở lịch trình",
+    "ConfirmDelete": "Xác nhận xóa?",
 
     "Calendar:Calendar": "Lịch trình",
     "Calendar:TaskDetails": "Chi tiết công việc",
@@ -125,6 +126,7 @@
     "Confirm Reject Task?": "Xác nhận không duyệt?",
     "Approve": "Đồng ý",
     "Reject": "Từ chối",
+    "RejectTaskSuccess": "Đã từ chối và xóa công việc!",
 
     "Menu:Projects": "Danh sách dự án",
     "Projects": "Dự án",
@@ -146,6 +148,14 @@
     "Completed overdue tasks": "Đã hoàn thành",
     "Overdue Tasks": "Danh sách công việc quá hạn",
     "Pending Tasks": "Danh sách công việc chờ phê duyệt",
+
+    "AcceptTaskSuccess": "Đã phê duyệt công việc!",
+    "Notification:ReadAllNotifications": "Bạn đã xem hết tất cả thông báo.",
+    "Notification:NoNotifications": "Không có thông báo mới.",
+    "Notification:Notifications": "Thông báo của tôi",
+    "Notification:MarkAllAsRead": "Đánh dấu là đã đọc",
+
+
 
     "Enum:TaskStatus.0": "Mới tạo",
     "Enum:TaskStatus.1": "Đang làm",
